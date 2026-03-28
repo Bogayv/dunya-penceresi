@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, memo, useMemo } from "react";
 
 const GLOBAL_TAGS = [
-  { id: "all", label: "TÜMÜ", query: "finance+world+news" },
-  { id: "ekonomi", label: "EKONOMİ", query: "global+economy+markets" },
-  { id: "finans", label: "FİNANS", query: "wall+street+investing" },
-  { id: "jeopolitik", label: "JEOPOLİTİK", query: "geopolitics+intelligence" },
-  { id: "borsa", label: "BORSA", query: "stock+market+analysis" },
-  { id: "kripto", label: "KRİPTO", query: "crypto+bitcoin+news" },
+  { id: "all", label: "TÜMÜ", query: "top+stories+finance+world" },
+  { id: "ekonomi", label: "EKONOMİ", query: "economy+markets+inflation" },
+  { id: "finans", label: "FİNANS", query: "investing+fed+interest+rates" },
+  { id: "jeopolitik", label: "JEOPOLİTİK", query: "geopolitics+intelligence+military" },
+  { id: "siyaset", label: "SİYASET", query: "politics+government+elections" },
+  { id: "borsa", label: "BORSA", query: "stock+market+nasdaq+sp500" },
+  { id: "kripto", label: "KRİPTO", query: "crypto+bitcoin+blockchain" },
 ];
 
 const Ticker = memo(() => {
@@ -51,20 +52,29 @@ export default function GlobalHaberler() {
     setLoading(true);
     try {
       const rssUrl = `https://news.google.com/rss/search?q=${activeTag.query}&hl=en-US&gl=US&ceid=US:en`;
-      const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`);
+      const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=50`);
       const data = await res.json();
+      
       if (data.status === "ok") {
-        setNewsPool(data.items.map(item => ({
-          id: item.guid,
-          title: item.title,
-          link: item.link,
-          source: item.source || "Global Intel",
-          pubDate: item.pubDate,
-          img: `https://picsum.photos/seed/${encodeURIComponent(item.title.slice(0,5))}/800/450`,
-          timestamp: new Date(item.pubDate).getTime()
-        })));
+        const processed = data.items.map(item => {
+          // BAŞLIK VE KAYNAK AYRIŞTIRMA MANTIĞI
+          const parts = item.title.split(" - ");
+          const sourceName = parts.pop(); // Son parçayı (kaynağı) al
+          const cleanTitle = parts.join(" - "); // Geri kalanı başlık yap
+          
+          return {
+            id: item.guid,
+            title: cleanTitle || item.title,
+            link: item.link,
+            source: sourceName || item.source || "GLOBAL",
+            pubDate: item.pubDate,
+            img: `https://picsum.photos/seed/${encodeURIComponent(item.title.slice(0,8))}/800/450`,
+            timestamp: new Date(item.pubDate).getTime()
+          };
+        });
+        setNewsPool(processed);
       }
-    } catch (e) { console.error("Hata"); }
+    } catch (e) { console.error("Sync Error"); }
     setLoading(false);
   }
 
@@ -84,13 +94,11 @@ export default function GlobalHaberler() {
         .news-card:hover { transform: translateY(-5px); border-color: #c9a96e; }
         .news-card img { width: 100%; height: 200px; object-fit: cover; border-bottom: 2px solid #c9a96e; opacity: 0.8; }
         .footer-link { color: #4a6080; text-decoration: none; margin: 0 15px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(8,12,20,0.98); backdrop-filter: blur(15px); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: #0d1424; border: 1px solid #c9a96e; border-radius: 12px; max-width: 500px; width: 100%; padding: 40px; text-align: center; }
       `}</style>
 
       {modalType && (
-        <div className="modal-overlay" onClick={() => setModalType(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(8,12,20,0.98)", backdropFilter: "blur(15px)", zIndex: 10000, display: "flex", justifyContent: "center", alignItems: "center", padding: "20px" }} onClick={() => setModalType(null)}>
+          <div style={{ background: "#0d1424", border: "1px solid #c9a96e", borderRadius: "12px", maxWidth: "500px", width: "100%", padding: "40px", textAlign: "center" }} onClick={e => e.stopPropagation()}>
             <h2 style={{ color: "#c9a96e" }}>{modalType.toUpperCase()}</h2>
             <p style={{ color: "#8a9ab0", lineHeight: "1.8" }}>
               {modalType === 'about' && "WorldWindows.network, küresel finans ve jeopolitik istihbaratı anlık olarak sunan profesyonel bir haber terminalidir."}
@@ -122,7 +130,7 @@ export default function GlobalHaberler() {
 
       <main style={{ maxWidth: "1400px", margin: "0 auto" }}>
         {loading && newsPool.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "100px", color: "#c9a96e" }}>[ STREAMING_DATA ]</div>
+          <div style={{ textAlign: "center", padding: "100px", color: "#c9a96e" }}>[ ANALYZING_CHANNELS... ]</div>
         ) : (
           <>
             <h2 style={{ color: "#c9a96e", fontSize: "18px", padding: "32px 32px 0", marginBottom: "-10px" }}>LIVE RADAR</h2>
@@ -131,7 +139,7 @@ export default function GlobalHaberler() {
                 <div key={n.id} className="news-card" onClick={() => window.open(n.link, "_blank")}>
                   <img src={n.img} />
                   <div style={{ padding: "20px" }}>
-                    <div style={{ color: "#c9a96e", fontSize: "10px", fontWeight: "900", marginBottom: "10px" }}>[{n.source.toUpperCase()}]</div>
+                    <div style={{ color: "#c9a96e", fontSize: "10px", fontWeight: "900", marginBottom: "10px" }}>{n.source.toUpperCase()}</div>
                     <h3 style={{ fontSize: "16px", margin: 0, lineHeight: "1.4" }}>{n.title}</h3>
                   </div>
                 </div>
