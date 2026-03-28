@@ -72,7 +72,7 @@ export default function GlobalHaberler() {
       const allFetchedNews = [];
       const fetchPromises = activeTag.urls.map(async (url) => {
         try {
-          const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&api_key=oyncyf0mgh8v7e5lq9w5z9yqyv8u78moxg8p9r9j`);
+          const res = await fetch(`/api/news?rss_url=${encodeURIComponent(url)}`);
           const data = await res.json();
           if (data.status === "ok" && data.items) {
             return data.items.map(item => ({
