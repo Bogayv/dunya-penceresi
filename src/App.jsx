@@ -1,132 +1,99 @@
-import { useState, useEffect, useRef, memo, useMemo } from "react";
+import { useState, useEffect, memo } from "react";
 
-const GLOBAL_TAGS = [
-  { id: "all", label: "TÜMÜ", urls: ["https://www.reutersagency.com/feed/", "http://feeds.bbci.co.uk/news/world/rss.xml", "https://www.theguardian.com/world/rss", "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"]},
-  { id: "ekonomi", label: "EKONOMİ/FT", urls: ["https://www.ft.com/?format=rss", "https://www.economist.com/sections/economics/rss.xml", "https://www.wsj.com/xml/rss/3_7014.xml", "https://www.forbes.com/economics/feed/"]},
-  { id: "finans", label: "FİNANS/WSJ", urls: ["https://www.wsj.com/xml/rss/3_7031.xml", "https://www.cnbc.com/id/10000664/device/rss/rss.html", "https://www.ft.com/markets?format=rss"]},
-  { id: "jeopolitik", label: "JEOPOLİTİK", urls: ["https://www.theguardian.com/world/rss", "https://www.aljazeera.com/xml/rss/all.xml", "https://www.independent.co.uk/news/world/rss"]},
-  { id: "siyaset", label: "SİYASET/POLITICO", urls: ["https://www.politico.com/rss/politicopicks.xml", "https://www.theguardian.com/politics/rss"]},
-  { id: "gold", label: "GOLD/SILVER", urls: ["https://www.kitco.com/rss/index.xml", "https://www.investing.com/rss/news_95.rss"]},
-  { id: "fed", label: "FED", urls: ["https://www.cnbc.com/id/20910258/device/rss/rss.html"]},
-  { id: "borsa", label: "BORSA", urls: ["https://www.bloomberght.com/rss", "https://www.bigpara.com/rss/"]},
-  { id: "kap", label: "KAP", urls: ["https://www.paraanaliz.com/feed/", "https://www.dunya.com/rss"]},
+const SOURCES = [
+  { id: "all", label: "TÜMÜ", query: "finance+world+news" },
+  { id: "ekonomi", label: "EKONOMİ", query: "economy+markets" },
+  { id: "borsa", label: "BORSA", query: "stock+market+analysis" },
+  { id: "kripto", label: "KRİPTO", query: "crypto+bitcoin+news" },
+  { id: "jeopolitik", label: "JEOPOLİTİK", query: "geopolitics+war+intelligence" }
 ];
 
-const TradingViewLiveTicker = memo(() => {
-  const container = useRef();
-  useEffect(() => {
-    if (!container.current) return;
-    container.current.innerHTML = "";
-    const script = document.createElement("script");
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
-    script.type = "text/javascript"; script.async = true;
-    script.innerHTML = JSON.stringify({
-      "symbols": [
-        { "proName": "OANDA:XAUUSD", "title": "GOLD" },
-        { "proName": "OANDA:XAGUSD", "title": "SILVER" },
-        { "proName": "TVC:UKOIL", "title": "BRENT" },
-        { "proName": "FX:USDTRY", "title": "USD/TRY" },
-        { "proName": "BINANCE:BTCUSDT", "title": "BTC" }
-      ],
-      "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": false, "displayMode": "regular", "locale": "tr", "backgroundColor": "#000000"
-    });
-    container.current.appendChild(script);
-  }, []);
-  return <div style={{ background: "#000", borderBottom: "1px solid #1e2d4a", minHeight: "46px" }} ref={container}></div>;
-});
-
 export default function GlobalHaberler() {
-  const [newsPool, setNewsPool] = useState([]);
+  const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [activeTag, setActiveTag] = useState(GLOBAL_TAGS[0]);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [activeTag, setActiveTag] = useState(SOURCES[0]);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) { fetchNews(); return 60; }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
+    fetchGoogleNews();
   }, [activeTag]);
 
-  useEffect(() => { fetchNews(); }, [activeTag]);
-
-  async function fetchNews() {
+  async function fetchGoogleNews() {
     setLoading(true);
-    let allItems = [];
-    
-    // YENİ STRATEJİ: Her URL'yi tek tek ve güvenli tünelle dene
-    for (const url of activeTag.urls) {
-      try {
-        const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&api_key=oyncyf0mgh8v7e5lq9w5z9yqyv8u78moxg8p9r9j`;
-        const res = await fetch(proxyUrl);
-        const data = await res.json();
-        
-        if (data.status === "ok") {
-          const processed = data.items.map(item => ({
-            id: item.guid || item.link,
-            baslik: item.title,
-            kaynak: data.feed.title || "Global",
-            url: item.link,
-            img: item.enclosure?.link || item.thumbnail || `https://picsum.photos/seed/${encodeURIComponent(item.title.slice(0,5))}/800/450`,
-            timestamp: new Date(item.pubDate).getTime()
-          }));
-          allItems = [...allItems, ...processed];
-        }
-      } catch (e) { console.log("Hata:", url); }
+    try {
+      // GOOGLE NEWS RSS -> JSON Dönüştürücü (Alternatif ve Limitsiz)
+      const rssUrl = `https://news.google.com/rss/search?q=${activeTag.query}&hl=en-US&gl=US&ceid=US:en`;
+      const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`);
+      const data = await res.json();
+      
+      if (data.status === "ok") {
+        setNews(data.items.map(item => ({
+          id: item.guid,
+          title: item.title,
+          source: item.source || "Global Intelligence",
+          link: item.link,
+          pubDate: item.pubDate,
+          img: `https://picsum.photos/seed/${encodeURIComponent(item.title.slice(0,10))}/800/450`
+        })));
+      }
+    } catch (e) {
+      console.error("Hata oluştu");
+    } finally {
+      setLoading(false);
     }
-    
-    setNewsPool(allItems.sort((a,b) => b.timestamp - a.timestamp));
-    setLoading(false);
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#080c14", color: "#e8e6e0", fontFamily: "sans-serif" }}>
-      <style>{`
-        .tag-bar { display: flex; gap: 8px; overflow-x: auto; padding: 15px 32px; background: #0d1424; border-bottom: 1px solid #1e2d4a; position: sticky; top: 0; z-index: 100; }
-        .tag-pill { padding: 8px 16px; background: #080c14; border: 1px solid #1e2d4a; border-radius: 4px; color: #4a6080; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; }
-        .tag-pill.active { background: #c9a96e; color: #0d1424; border-color: #c9a96e; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; padding: 32px; }
-        .card { background: #0d1424; border: 1px solid #1e2d4a; border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.3s; }
-        .card:hover { border-color: #c9a96e; transform: translateY(-5px); }
-        .card img { width: 100%; height: 200px; object-fit: cover; }
-      `}</style>
-
-      <header style={{ background: "#0d1424", padding: "20px 32px" }}>
-        <h1 style={{ color: "#c9a96e", margin: 0, fontSize: "28px", letterSpacing: "2px" }}>WORLD WINDOWS NETWORK</h1>
-        <div style={{ color: "#4a6080", fontSize: "12px" }}>REFRESHING IN: {timeLeft}s</div>
+    <div style={{ minHeight: "100vh", background: "#05070a", color: "#e0e0e0", fontFamily: "monospace" }}>
+      <header style={{ borderBottom: "1px solid #1e2d4a", padding: "20px 32px", background: "#0a0d14" }}>
+        <h1 style={{ color: "#c9a96e", margin: 0, fontSize: "24px", letterSpacing: "4px" }}>WORLD WINDOWS NETWORK</h1>
+        <div style={{ color: "#4a6080", fontSize: "11px", marginTop: "5px" }}>STATUS: LIVE_INTELLIGENCE_STREAM</div>
       </header>
 
-      <div className="tag-bar">
-        {GLOBAL_TAGS.map(t => (
-          <div key={t.id} className={`tag-pill ${activeTag.id === t.id ? 'active' : ''}`} onClick={() => setActiveTag(t)}>#{t.label}</div>
+      <div style={{ display: "flex", gap: "10px", padding: "15px 32px", background: "#0a0d14", overflowX: "auto", borderBottom: "1px solid #1e2d4a" }}>
+        {SOURCES.map(s => (
+          <button 
+            key={s.id} 
+            onClick={() => setActiveTag(s)}
+            style={{ 
+              padding: "8px 16px", 
+              background: activeTag.id === s.id ? "#c9a96e" : "transparent",
+              color: activeTag.id === s.id ? "#05070a" : "#4a6080",
+              border: "1px solid #1e2d4a",
+              cursor: "pointer",
+              fontSize: "10px",
+              fontWeight: "bold"
+            }}
+          >
+            {s.label}
+          </button>
         ))}
       </div>
-      
-      <TradingViewLiveTicker />
 
-      <main>
-        {loading && newsPool.length === 0 ? (
-          <div style={{ padding: "100px", textAlign: "center", color: "#c9a96e" }}>HABERLER YÜKLENİYOR...</div>
+      <main style={{ padding: "32px" }}>
+        {loading ? (
+          <div style={{ color: "#c9a96e", textAlign: "center", paddingTop: "50px" }}>> DECRYPTING_DATA_STREAM...</div>
         ) : (
-          <div className="grid">
-            {newsPool.map(n => (
-              <div key={n.id} className="card" onClick={() => window.open(n.url, "_blank")}>
-                <img src={n.img} />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "25px" }}>
+            {news.map(n => (
+              <div 
+                key={n.id} 
+                onClick={() => window.open(n.link, "_blank")}
+                style={{ background: "#0a0d14", border: "1px solid #1e2d4a", borderRadius: "4px", overflow: "hidden", cursor: "pointer" }}
+              >
+                <img src={n.img} style={{ width: "100%", height: "180px", objectFit: "cover", opacity: "0.8" }} />
                 <div style={{ padding: "20px" }}>
-                  <div style={{ color: "#c9a96e", fontSize: "10px", fontWeight: "bold", marginBottom: "10px" }}>{n.kaynak.toUpperCase()}</div>
-                  <h3 style={{ fontSize: "16px", margin: 0, lineHeight: "1.4" }}>{n.baslik}</h3>
+                  <div style={{ color: "#c9a96e", fontSize: "9px", marginBottom: "10px" }}>[{n.source.toUpperCase()}]</div>
+                  <h3 style={{ fontSize: "15px", margin: 0, lineHeight: "1.4", color: "#fff" }}>{n.title}</h3>
+                  <div style={{ color: "#3a5278", fontSize: "9px", marginTop: "15px" }}>{n.pubDate}</div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </main>
-
-      <footer style={{ padding: "40px", textAlign: "center", background: "#0d1424", borderTop: "1px solid #1e2d4a", marginTop: "50px" }}>
-        <div style={{ color: "#c9a96e", fontWeight: "bold" }}>worldwindows.network</div>
+      
+      <footer style={{ textAlign: "center", padding: "40px", color: "#1e2d4a", fontSize: "10px" }}>
+        WORLDWINDOWS.NETWORK // EST. 2026
       </footer>
     </div>
   );
