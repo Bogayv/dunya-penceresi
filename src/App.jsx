@@ -71,9 +71,7 @@ export default function GlobalHaberler() {
     
     for (const url of activeTag.urls) {
       try {
-        // DOĞRUDAN API ERİŞİMİ (TÜNEL YOK - API KEY VAR)
-        const fetchUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&api_key=oyncyf0mgh8v7e5lq9w5z9yqyv8u78moxg8p9r9j&nocache=${Date.now()}`;
-        const res = await fetch(fetchUrl);
+        const res = await fetch(`/api/news?url=${encodeURIComponent(url)}`);
         const data = await res.json();
         
         if (data.status === "ok" && data.items) {
@@ -92,7 +90,7 @@ export default function GlobalHaberler() {
           allFetchedNews.push(...items);
         }
       } catch (e) {
-        console.error("Fetch failed for:", url);
+        console.error("Haber hatasi");
       }
     }
 
@@ -116,38 +114,24 @@ export default function GlobalHaberler() {
         .tag-bar { display: flex; gap: 8px; overflow-x: auto; padding: 12px 32px; background: #0d1424; border-bottom: 1px solid #1e2d4a; position: sticky; top: 0; z-index: 100; }
         .tag-pill { padding: 6px 16px; background: #080c14; border: 1px solid #1e2d4a; border-radius: 4px; color: #4a6080; font-size: 10px; font-weight: 900; cursor: pointer; white-space: nowrap; transition: 0.2s; }
         .tag-pill.active { background: #c9a96e; border-color: #c9a96e; color: #0d1424; }
-        .news-slider { display: flex; gap: 24px; overflow-x: auto; padding: 20px 32px 40px; scroll-behavior: smooth; }
+        .news-slider { display: flex; gap: 24px; overflow-x: auto; padding: 20px 32px 40px; }
         .news-card { min-width: 420px; max-width: 420px; background: #0d1424; border: 1px solid #1e2d4a; border-radius: 12px; cursor: pointer; overflow: hidden; position: relative; }
         .news-card img { width: 100%; height: 240px; object-fit: cover; border-bottom: 3px solid #c9a96e; }
-        .time-badge { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.85); padding: 5px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; color: #c9a96e; border: 1px solid #c9a96e; z-index: 2; }
         .archive-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; padding: 0 32px 60px; }
         .archive-card { background: #0d1424; border: 1px solid #1e2d4a; border-radius: 10px; cursor: pointer; padding: 25px; border-left: 4px solid #1e2d4a; }
-        .close-btn { position: fixed; top: 30px; right: 30px; background: #c9a96e; color: #0d1424; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; font-size: 24px; font-weight: bold; z-index: 20000; display: flex; align-items: center; justify-content: center; }
         .footer { background: #0d1424; padding: 40px 32px; border-top: 1px solid #1e2d4a; text-align: center; }
-        .footer-link { color: #4a6080; text-decoration: none; margin: 0 15px; font-size: 12px; font-weight: bold; cursor: pointer; }
       `}</style>
 
       {modalType && (
         <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(8,12,20,0.98)", backdropFilter: "blur(15px)", zIndex: 10000, display: "flex", justifyContent: "center", alignItems: "center", padding: "20px" }} onClick={() => setModalType(null)}>
-          <button className="close-btn" onClick={() => setModalType(null)}>✕</button>
           <div style={{ background: "#0d1424", border: "1px solid #c9a96e", borderRadius: "12px", maxWidth: "850px", width: "100%", maxHeight: "90vh", overflowY: "auto", position: "relative", padding: "40px" }} onClick={e => e.stopPropagation()}>
-            {modalType === 'news' && selectedNews && (
+            {selectedNews && (
               <>
                 <img src={selectedNews.img} style={{ width: "calc(100% + 80px)", margin: "-40px -40px 20px", height: "350px", objectFit: "cover", borderBottom: "2px solid #c9a96e" }} />
-                <div style={{ color: "#c9a96e", fontWeight: "900", fontSize: "12px" }}>#{selectedNews.tagLabel} • {getRelativeTime(selectedNews.timestamp)}</div>
                 <h2 style={{ fontFamily: "'Playfair Display'", fontSize: "32px", color: "#fff", margin: "15px 0" }}>{selectedNews.baslik}</h2>
                 <p style={{ color: "#8a9ab0", lineHeight: "1.8", fontSize: "18px" }}>{selectedNews.detay}</p>
-                <a href={selectedNews.url} target="_blank" rel="noreferrer" style={{ background: "#c9a96e", color: "#0d1424", padding: "12px 30px", textDecoration: "none", fontWeight: "bold", borderRadius: "4px", display: "inline-block", marginTop: "20px" }}>FULL SOURCE ↗</a>
+                <a href={selectedNews.url} target="_blank" rel="noreferrer" style={{ background: "#c9a96e", color: "#0d1424", padding: "12px 30px", textDecoration: "none", fontWeight: "bold", borderRadius: "4px", display: "inline-block" }}>KAYNAK ↗</a>
               </>
-            )}
-            {modalType === 'about' && (
-              <><h2 style={{ color: "#c9a96e", fontFamily: "'Playfair Display'" }}>ABOUT</h2><p style={{ color: "#8a9ab0", lineHeight: "1.8" }}>World Windows Network provides real-time global intelligence.</p></>
-            )}
-            {modalType === 'privacy' && (
-              <><h2 style={{ color: "#c9a96e", fontFamily: "'Playfair Display'" }}>PRIVACY</h2><p style={{ color: "#8a9ab0", lineHeight: "1.8" }}>We use cookies to improve your experience.</p></>
-            )}
-            {modalType === 'contact' && (
-              <><h2 style={{ color: "#c9a96e", fontFamily: "'Playfair Display'" }}>CONTACT</h2><h3 style={{ color: "#fff" }}>iletisim@worldwindows.network</h3></>
             )}
           </div>
         </div>
@@ -155,14 +139,8 @@ export default function GlobalHaberler() {
 
       <header style={{ background: "#0d1424" }}>
         <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "20px 32px 5px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <h1 style={{ fontFamily: "'Playfair Display'", fontSize: "32px", color: "#c9a96e", fontWeight: "900", margin: 0 }}>WORLD WINDOWS</h1>
-            <div style={{ fontSize: "10px", color: "#4a6080", letterSpacing: "3px", fontWeight: "bold" }}>.NETWORK INTELLIGENCE</div>
-          </div>
-          <div style={{ display: "flex", gap: "20px", alignItems: "center" }} translate="no">
-             <div style={{ fontSize: "12px", color: "#c9a96e", fontWeight: "bold" }}>SYNC: {timeLeft}s</div>
-             <button onClick={() => { fetchCollectiveNews(); setTimeLeft(60); }} style={{ background: "#c9a96e", color: "#0d1424", border: "none", padding: "8px 20px", borderRadius: "4px", fontWeight: "900", cursor: "pointer", fontSize: "11px" }}>SYNC NOW</button>
-          </div>
+          <h1 style={{ fontFamily: "'Playfair Display'", fontSize: "32px", color: "#c9a96e", fontWeight: "900", margin: 0 }}>WORLD WINDOWS</h1>
+          <div style={{ fontSize: "12px", color: "#c9a96e", fontWeight: "bold" }}>SYNC: {timeLeft}s</div>
         </div>
         <div className="tag-bar">
           {GLOBAL_TAGS.map(t => (
@@ -174,46 +152,26 @@ export default function GlobalHaberler() {
 
       <main style={{ maxWidth: "1400px", margin: "0 auto" }}>
         {loading && newsPool.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "100px", color: "#c9a96e", letterSpacing: "3px" }}>SCANNING GLOBAL CHANNELS...</div>
+          <div style={{ textAlign: "center", padding: "100px", color: "#c9a96e" }}>SUNUCU HABERLERİ ÇEKİYOR...</div>
         ) : (
-          <>
-            <section style={{ padding: "30px 0" }}>
-              <h2 style={{ fontSize: "18px", color: "#c9a96e", fontFamily: "'Playfair Display'", padding: "0 32px", marginBottom: "10px" }}>LIVE RADAR</h2>
-              <div className="news-slider">
-                {displayData.radar.map(n => (
-                  <div key={n.id} className="news-card" onClick={() => { setSelectedNews(n); setModalType('news'); }}>
-                    <div className="time-badge" translate="no">{getRelativeTime(n.timestamp)}</div>
-                    <img src={n.img} />
-                    <div style={{ padding: "25px" }}>
-                      <div style={{ color: "#c9a96e", fontWeight: "900", fontSize: "10px", marginBottom: "8px" }}>{n.kaynak.toUpperCase()}</div>
-                      <h3 style={{ fontSize: "18px", color: "#e8e6e0", lineHeight: "1.3", margin: 0, fontFamily: "'Playfair Display'" }}>{n.baslik}</h3>
-                    </div>
+          <section style={{ padding: "30px 0" }}>
+            <div className="news-slider">
+              {displayData.radar.map(n => (
+                <div key={n.id} className="news-card" onClick={() => { setSelectedNews(n); setModalType('news'); }}>
+                  <img src={n.img} />
+                  <div style={{ padding: "25px" }}>
+                    <div style={{ color: "#c9a96e", fontWeight: "900", fontSize: "10px" }}>{n.kaynak.toUpperCase()}</div>
+                    <h3 style={{ fontSize: "18px", color: "#e8e6e0", margin: "10px 0", fontFamily: "'Playfair Display'" }}>{n.baslik}</h3>
                   </div>
-                ))}
-              </div>
-            </section>
-            <section style={{ padding: "30px 0", borderTop: "1px solid #1e2d4a" }}>
-              <div className="archive-grid">
-                {displayData.archive.map(n => (
-                  <div key={n.id} className="archive-card" onClick={() => { setSelectedNews(n); setModalType('news'); }}>
-                    <div style={{ fontSize: "10px", color: "#c9a96e", marginBottom: "8px", fontWeight: "900" }} translate="no">#{n.tagLabel} • {getRelativeTime(n.timestamp)}</div>
-                    <h4 style={{ fontSize: "16px", color: "#e8e6e0", lineHeight: "1.4", margin: 0 }}>{n.baslik}</h4>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
       </main>
 
       <footer className="footer">
-        <div style={{ color: "#c9a96e", fontWeight: "900", marginBottom: "20px" }}>WORLDWINDOWS.NETWORK</div>
-        <div>
-          <span className="footer-link" style={{cursor:'pointer'}} onClick={() => setModalType('about')}>ABOUT</span>
-          <span className="footer-link" style={{cursor:'pointer', marginLeft:'15px'}} onClick={() => setModalType('privacy')}>PRIVACY</span>
-          <span className="footer-link" style={{cursor:'pointer', marginLeft:'15px'}} onClick={() => setModalType('contact')}>CONTACT</span>
-        </div>
-        <div style={{ color: "#3a5278", fontSize: "10px", marginTop: "30px" }}>© 2026 World Windows Network. All Rights Reserved.</div>
+        <div style={{ color: "#c9a96e", fontWeight: "900" }}>WORLDWINDOWS.NETWORK</div>
       </footer>
     </div>
   );
