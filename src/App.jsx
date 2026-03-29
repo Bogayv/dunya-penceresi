@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo, useMemo } from "react";
-import { Analytics } from "@vercelanalytics/react";
+import { Analytics } from "@vercel/analytics/react";
 
 const GLOBAL_TAGS = [
   { id: "all", label: "ALL", urls: [] },
@@ -93,27 +93,33 @@ export default function GlobalHaberler() {
   useEffect(() => {
     document.title = "WORLD WINDOWS";
     
-    const bannerKiller = () => {
+    // RADIKAL: BANNER SİYAHLAŞTIRMA VE SİLME
+    const darkLocker = () => {
       const targets = [
-        '.goog-te-balloon-frame', '.goog-te-balloon-wrapper', 
-        '.goog-te-menu-frame', '.goog-tooltip', '#goog-gt-tt', 
-        '.goog-te-spinner-pos', '.goog-te-banner-frame', 
-        'iframe.goog-te-banner-frame', '.goog-te-banner', '.skiptranslate'
+        '.goog-te-balloon-frame', '.goog-te-balloon-wrapper', '.goog-te-menu-frame', 
+        '.goog-tooltip', '#goog-gt-tt', '.goog-te-spinner-pos', 
+        '.goog-te-banner-frame', 'iframe.goog-te-banner-frame', '.goog-te-banner', '.skiptranslate'
       ];
+      
       targets.forEach(selector => {
         document.querySelectorAll(selector).forEach(el => {
           if (!el.id.includes('google_translate_element')) {
-            el.remove();
+            el.style.display = "none";
+            el.style.opacity = "0";
+            el.style.pointerEvents = "none";
+            el.style.background = "#080c14"; // Çıksa bile siyah çıksın
           }
         });
       });
-      
-      // Zorlayıcı sıfırlama
+
+      // Google'ın eklediği boşluğu terminal siyahına boya ve sıfırla
       document.body.style.setProperty("top", "0px", "important");
+      document.body.style.setProperty("background-color", "#080c14", "important");
       document.documentElement.style.setProperty("margin-top", "0px", "important");
+      document.documentElement.style.setProperty("background-color", "#080c14", "important");
     };
 
-    const observer = new MutationObserver(bannerKiller);
+    const observer = new MutationObserver(darkLocker);
     observer.observe(document.body, { childList: true, subtree: true });
 
     const initTranslate = () => {
@@ -129,13 +135,14 @@ export default function GlobalHaberler() {
         const script = document.createElement("script");
         script.id = 'google-translate-script';
         script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-        script.async = true; document.body.appendChild(script);
+        script.async = true; 
+        document.body.appendChild(script);
       }
     };
     initTranslate();
 
     const styleInterval = setInterval(() => {
-      bannerKiller();
+      darkLocker();
       const combo = document.querySelector('.goog-te-combo');
       if (combo) {
         if (combo.options && combo.options.length > 0) {
@@ -152,15 +159,13 @@ export default function GlobalHaberler() {
             combo.options[0].textContent = "LANG";
           }
         }
-        combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 75px !important; outline: none !important; margin: 0 !important; appearance: none !important; -webkit-appearance: none !important;";
-      } else { initTranslate(); }
+        combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 75px !important; outline: none !important; margin: 0 !important; appearance: none !important;";
+      }
       const gadget = document.querySelector('.goog-te-gadget');
       if(gadget) { 
         gadget.style.cssText = "color: #4a6080 !important; font-size: 10px !important; font-weight: bold !important; display: flex !important; align-items: center !important;";
         const textNode = Array.from(gadget.childNodes).find(n => n.nodeType === 3);
-        if (textNode && textNode.textContent.includes('tarafından desteklenmektedir')) {
-          textNode.textContent = ' Google Translate';
-        }
+        if (textNode && textNode.textContent.includes('tarafından')) { textNode.textContent = ' Google Translate'; }
       }
     }, 100);
 
@@ -231,25 +236,26 @@ export default function GlobalHaberler() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Source+Sans+3:wght@400;700&display=swap');
         
-        /* BANNER VE BEYAZ BANT İMHASI (EKSTREM) */
+        /* KRİTİK: GOOGLE'IN BEYAZ ALANINI SİYAHLA BOYA VE GİZLE */
         .goog-te-balloon-frame, .goog-te-balloon-wrapper, .goog-te-menu-frame, .goog-tooltip, #goog-gt-tt, .goog-te-banner-frame, iframe.goog-te-banner-frame, .goog-te-banner, .skiptranslate { 
            display: none !important; visibility: hidden !important; pointer-events: none !important; 
         }
         
-        html, body { 
+        /* Google'ın oluşturduğu Shadow DOM beyazlıklarını ve Body itmesini engelle */
+        html { 
+          top: 0px !important; 
+          margin-top: 0px !important; 
+          background-color: #080c14 !important; 
+        }
+        body { 
           top: 0px !important; 
           margin-top: 0px !important; 
           position: static !important; 
+          background-color: #080c14 !important;
         }
         
-        h1, h2, h3, h4, p, span, font { 
-           pointer-events: none !important; 
-           user-select: none !important;
-        }
-
-        .news-card, .archive-card, .tag-pill, button, a, .close-btn, .footer-link, .goog-te-combo { 
-           pointer-events: auto !important; 
-        }
+        h1, h2, h3, h4, p, span, font { pointer-events: none !important; user-select: none !important; }
+        .news-card, .archive-card, .tag-pill, button, a, .close-btn, .footer-link, .goog-te-combo { pointer-events: auto !important; }
 
         .radar-container { overflow-x: auto; display: flex; gap: 20px; padding: 20px 32px 40px; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; }
         .radar-container::-webkit-scrollbar { height: 4px; }
@@ -299,7 +305,7 @@ export default function GlobalHaberler() {
             <button className="close-btn" onClick={() => setModalType(null)}>✕</button>
             <h2 style={{ color: "#c9a96e", fontFamily: "'Playfair Display'" }}>{modalType.toUpperCase()}</h2>
             <p style={{ color: "#8a9ab0", lineHeight: "1.8" }}>
-              {modalType === 'about' && "World Windows is a professional news terminal that scans global finance, geopolitics, and economy news."}
+              {modalType === 'about' && "World Windows is a professional news terminal."}
               {modalType === 'contact' && "Email: worldwindows.network@gmail.com"}
               {modalType === 'privacy' && "We value your privacy."}
             </p>
