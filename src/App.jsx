@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, memo, useMemo } from "react";
 
-// GLOBAL MEDYA DEVLERİ VE KAYNAKLAR
 const GLOBAL_TAGS = [
   { id: "all", label: "ALL", urls: ["http://feeds.bbci.co.uk/news/world/rss.xml", "https://www.theguardian.com/world/rss", "https://rss.nytimes.com/services/xml/rss/nyt/World.xml", "https://www.reutersagency.com/feed/"]},
   { id: "ekonomi", label: "ECONOMY/FT", urls: ["https://www.ft.com/?format=rss", "https://www.economist.com/sections/economics/rss.xml", "https://www.wsj.com/xml/rss/3_7014.xml", "https://www.forbes.com/economics/feed/"]},
@@ -72,7 +71,8 @@ export default function GlobalHaberler() {
       const allFetchedNews = [];
       const fetchPromises = activeTag.urls.map(async (url) => {
         try {
-          const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&api_key=oyncyf0mgh8v7e5lq9w5z9yqyv8u78moxg8p9r9j`);
+          // *** DEĞİŞEN TEK YER BURASI: VERCEL SUNUCUSU ÜZERİNDEN ÇEKİYORUZ ***
+          const res = await fetch(`/api/news?url=${encodeURIComponent(url)}`);
           const data = await res.json();
           if (data.status === "ok" && data.items) {
             return data.items.map(item => ({
@@ -126,7 +126,6 @@ export default function GlobalHaberler() {
         .modal-content { background: #0d1424; border: 1px solid #c9a96e; border-radius: 12px; max-width: 850px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; padding: 40px; }
       `}</style>
 
-      {/* MODAL SYSTEM */}
       {modalType && (
         <div className="modal-overlay" onClick={() => setModalType(null)}>
           <button className="close-btn" onClick={() => setModalType(null)}>✕</button>
