@@ -97,7 +97,6 @@ export default function GlobalHaberler() {
     window.googleTranslateElementInit = () => {
       new window.google.translate.TranslateElement({
         pageLanguage: 'en',
-        // İNGİLİZCE (en) LİSTEYE GERİ EKLENDİ
         includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru,hi,ja,ko,th,kk,az,el,pt,cs,da,nl',
         autoDisplay: false
       }, 'google_translate_element');
@@ -112,7 +111,7 @@ export default function GlobalHaberler() {
       if (combo && !combo.dataset.hacked) {
         combo.dataset.hacked = "true";
         if (combo.options && combo.options.length > 0) {
-          combo.options[0].textContent = 'LANG'; // BUTON YAZISI LANG OLARAK DEĞİŞTİRİLDİ
+          combo.options[0].textContent = 'LANG';
         }
         combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 70px !important; outline: none !important; margin: 0 !important;";
       }
@@ -199,7 +198,9 @@ export default function GlobalHaberler() {
 
   const displayData = useMemo(() => {
     let filtered = activeTag.id === "all" ? newsPool : newsPool.filter(i => i.tagId === activeTag.id);
-    if (searchTerm.trim() !== "") {
+    const isSearching = searchTerm.trim() !== "";
+
+    if (isSearching) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(i => 
         i.baslik.toLowerCase().includes(term) || 
@@ -207,7 +208,14 @@ export default function GlobalHaberler() {
         i.kaynak.toLowerCase().includes(term)
       );
     }
+    
     const sorted = [...filtered].sort((a, b) => b.timestamp - a.timestamp);
+    
+    // ARAMA YAPILIYORSA RADARI GİZLE, TÜMÜNÜ ARŞİVE (IZGARA GÖRÜNÜMÜNE) BAS
+    if (isSearching) {
+      return { radar: [], archive: sorted };
+    }
+
     return { radar: sorted.slice(0, 8), archive: sorted.slice(8, 500) };
   }, [newsPool, activeTag, searchTerm]);
 
@@ -319,7 +327,6 @@ export default function GlobalHaberler() {
 
       <main style={{ maxWidth: "1400px", margin: "0 auto" }}>
         <section style={{ padding: "30px 0" }}>
-          
           <div style={{ display: "flex", alignItems: "center", gap: "20px", padding: "0 32px", marginBottom: "15px", flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <span style={{ color: "#c9a96e", fontWeight: "900", fontSize: "12px", fontFamily: "'Source Sans 3', sans-serif", letterSpacing: "1px" }}>SEARCH:</span>
@@ -336,25 +343,28 @@ export default function GlobalHaberler() {
             </h2>
           </div>
           
-          <div className="news-slider">
-            {displayData.radar.map(n => (
-              <div key={n.id} className="news-card" onClick={() => { setSelectedNews(n); setModalType('news'); }}>
-                <div className="time-badge" translate="no">{getRelativeTime(n.timestamp)}</div>
-                <img src={n.img} />
-                <div style={{ padding: "25px" }}>
-                  <div style={{ color: "#c9a96e", fontWeight: "900", fontSize: "10px", marginBottom: "8px" }}>{n.kaynak.toUpperCase()}</div>
-                  <h3 style={{ fontSize: "18px", color: "#e8e6e0", lineHeight: "1.3", margin: 0, fontFamily: "'Playfair Display'" }}>{n.baslik}</h3>
+          {/* ARAMA YAPILMIYORSA RADARI GÖSTER */}
+          {searchTerm.trim() === "" && (
+            <div className="news-slider">
+              {displayData.radar.map(n => (
+                <div key={n.id} className="news-card" onClick={() => { setSelectedNews(n); setModalType('news'); }}>
+                  <div className="time-badge" translate="no">{getRelativeTime(n.timestamp)}</div>
+                  <img src={n.img} />
+                  <div style={{ padding: "25px" }}>
+                    <div style={{ color: "#c9a96e", fontWeight: "900", fontSize: "10px", marginBottom: "8px" }}>{n.kaynak.toUpperCase()}</div>
+                    <h3 style={{ fontSize: "18px", color: "#e8e6e0", lineHeight: "1.3", margin: 0, fontFamily: "'Playfair Display'" }}>{n.baslik}</h3>
+                  </div>
                 </div>
-              </div>
-            ))}
-            {displayData.radar.length === 0 && (
-              <div style={{ color: "#8a9ab0", fontStyle: "italic", padding: "20px" }}>No recent news found for "{searchTerm}" in this category.</div>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
-        <section style={{ padding: "30px 0", borderTop: "1px solid #1e2d4a" }}>
-          <h2 style={{ fontSize: "20px", color: "#8a9ab0", padding: "0 32px", fontFamily: "'Playfair Display'", marginBottom: "20px" }}>ARCHIVE</h2>
+        {/* ARAMA YAPILIRSA BOŞLUĞU AYARLA VE BAŞLIĞI DEĞİŞTİR */}
+        <section style={{ padding: searchTerm.trim() === "" ? "30px 0" : "0 0 30px 0", borderTop: searchTerm.trim() === "" ? "1px solid #1e2d4a" : "none" }}>
+          <h2 style={{ fontSize: "20px", color: "#8a9ab0", padding: "0 32px", fontFamily: "'Playfair Display'", marginBottom: "20px" }}>
+            {searchTerm.trim() !== "" ? `SEARCH RESULTS (${displayData.archive.length} FOUND)` : "ARCHIVE"}
+          </h2>
           <div className="archive-grid">
             {displayData.archive.map(n => (
               <div key={n.id} className="archive-card" onClick={() => { setSelectedNews(n); setModalType('news'); }}>
@@ -365,6 +375,10 @@ export default function GlobalHaberler() {
               </div>
             ))}
           </div>
+          {/* ARAMA SONUCU BOŞSA */}
+          {searchTerm.trim() !== "" && displayData.archive.length === 0 && (
+             <div style={{ color: "#8a9ab0", fontStyle: "italic", padding: "0 32px" }}>No recent news found for "{searchTerm}" in this category.</div>
+          )}
         </section>
       </main>
 
