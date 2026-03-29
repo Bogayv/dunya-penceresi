@@ -67,6 +67,9 @@ const TradingViewLiveTicker = memo(() => {
   return <div style={{ background: "#000", borderBottom: "1px solid #1e2d4a", minHeight: "46px" }} ref={container}></div>;
 });
 
+// BELLEKTE ZAMAN SAKLAMA (Haberler Just Now kalmasın diye)
+const globalTimeCache = {};
+
 export default function GlobalHaberler() {
   const [newsPool, setNewsPool] = useState([]);
   const [selectedNews, setSelectedNews] = useState(null);
@@ -83,11 +86,7 @@ export default function GlobalHaberler() {
     head.appendChild(link);
 
     window.googleTranslateElementInit = () => {
-      new window.google.translate.TranslateElement({
-        pageLanguage: 'en',
-        includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru,hi,ja,ko,th,kk,az,el,pt,cs,da,nl',
-        autoDisplay: false
-      }, 'google_translate_element');
+      new window.google.translate.TranslateElement({ pageLanguage: 'en', includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru,hi,ja,ko,th,kk,az,el,pt,cs,da,nl', autoDisplay: false }, 'google_translate_element');
     };
     const script = document.createElement("script");
     script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit&hl=en";
@@ -125,7 +124,6 @@ export default function GlobalHaberler() {
 
   async function fetchCollectiveNews() {
     try {
-      const allFetchedNews = [];
       const targetUrls = activeTag.id === "all" ? ALL_URLS : activeTag.urls;
       const fetchPromises = targetUrls.map(async (url) => {
         try {
@@ -137,20 +135,35 @@ export default function GlobalHaberler() {
           const items = Array.from(xmlDoc.querySelectorAll("item, entry")).slice(0, 15);
           const feedTitle = xmlDoc.querySelector("channel > title, feed > title")?.textContent || "Global";
           const feedOrigin = new URL(url).origin;
+
           return items.map(item => {
             const title = item.querySelector("title")?.textContent || "News";
             const linkElem = item.querySelector("link");
             let rawLink = (linkElem?.textContent || linkElem?.getAttribute("href") || "#").trim();
             if (rawLink.startsWith("/")) rawLink = feedOrigin + rawLink;
             if (rawLink.includes('bigpara.com')) rawLink = rawLink.replace('www.bigpara.com', 'bigpara.hurriyet.com.tr');
-            const pubDate = item.querySelector("pubDate")?.textContent || item.querySelector("published")?.textContent || item.querySelector("updated")?.textContent;
-            const timestamp = pubDate ? new Date(pubDate).getTime() : Date.now();
-            return { id: Math.random(), baslik: title, detay: (item.querySelector("description")?.textContent || "").replace(/<[^>]*>?/gm, ''), kaynak: feedTitle.replace(/ - BBC News| \| World/gi, ''), url: rawLink, img: `https://picsum.photos/seed/${encodeURIComponent(title.slice(0,5))}/800/450`, tagId: activeTag.id, timestamp: isNaN(timestamp) ? Date.now() : timestamp };
+            
+            // ZAMAN YAKALAMA VE SABİTLEME
+            const pubDateStr = item.querySelector("pubDate")?.textContent || item.querySelector("published")?.textContent || item.querySelector("updated")?.textContent;
+            const newsKey = btoa(unescape(encodeURIComponent(title.slice(0,40) + feedTitle))); // Benzersiz haber anahtarı
+            
+            let finalTimestamp;
+            const parsedTime = pubDateStr ? new Date(pubDateStr).getTime() : null;
+
+            if (parsedTime && !isNaN(parsedTime)) {
+              finalTimestamp = parsedTime;
+            } else if (globalTimeCache[newsKey]) {
+              finalTimestamp = globalTimeCache[newsKey];
+            } else {
+              finalTimestamp = Date.now();
+              globalTimeCache[newsKey] = finalTimestamp; // Zamanı dondur
+            }
+
+            return { id: Math.random(), baslik: title, detay: (item.querySelector("description")?.textContent || "").replace(/<[^>]*>?/gm, ''), kaynak: feedTitle.replace(/ - BBC News| \| World/gi, ''), url: rawLink, img: `https://picsum.photos/seed/${encodeURIComponent(title.slice(0,5))}/800/450`, tagId: activeTag.id, timestamp: finalTimestamp };
           });
         } catch (e) { return []; }
       });
       const results = await Promise.all(fetchPromises);
-      // SADECE ZAMANA GÖRE SIRALA (EN YENİ EN ÜSTTE)
       setNewsPool(results.flat().sort((a, b) => b.timestamp - a.timestamp));
     } catch (e) {}
   }
