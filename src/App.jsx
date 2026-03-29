@@ -105,21 +105,21 @@ export default function GlobalHaberler() {
     script.async = true;
     document.body.appendChild(script);
 
+    // ARAPÇA BUG'INI ÖNLEYEN YENİ VE GÜVENLİ TASARIM HİLESİ
     const styleInterval = setInterval(() => {
       const combo = document.querySelector('.goog-te-combo');
-      if (combo) {
+      if (combo && !combo.dataset.hacked) {
+        combo.dataset.hacked = "true"; // Sadece 1 kere çalışmasını sağlar, Google'ı çökertmez
         if (combo.options && combo.options.length > 0) {
-          if (combo.options[0].text !== 'EN') {
-            combo.options[0].text = 'EN';
-          }
+          combo.options[0].textContent = '🌐 TRANSLATE';
         }
-        combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 60px !important; outline: none !important; margin: 0 !important;";
+        combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 110px !important; outline: none !important; margin: 0 !important;";
       }
       const gadget = document.querySelector('.goog-te-gadget');
       if(gadget) {
         gadget.style.cssText = "color: transparent !important; font-size: 0px !important; display: flex !important; align-items: center !important;";
       }
-    }, 500);
+    }, 100);
     return () => clearInterval(styleInterval);
   }, []);
 
@@ -202,6 +202,13 @@ export default function GlobalHaberler() {
     return { radar: sorted.slice(0, 8), archive: sorted.slice(8, 500) };
   }, [newsPool, activeTag]);
 
+  // ÇEREZLERİ SİLİP SİTEYİ İNGİLİZCEYE DÖNDÜREN FONKSİYON
+  const resetToEnglish = () => {
+    document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}`;
+    window.location.reload();
+  };
+
   return (
     <div style={{ paddingTop: "40px", minHeight: "100vh", background: "#080c14", color: "#e8e6e0", fontFamily: "'Georgia', serif", overflowX: "hidden" }}>
       <style>{`
@@ -229,13 +236,17 @@ export default function GlobalHaberler() {
         .header-subtitle { font-family: 'Playfair Display', serif; font-size: 15px; color: #c9a96e; font-style: italic; margin-top: 2px; letter-spacing: 0.5px; opacity: 0.9; }
         .sync-text { font-size: 12px; color: #c9a96e; font-weight: bold; }
         .action-btn { background: #c9a96e; color: #0d1424; border: none; padding: 0 20px; border-radius: 4px; font-weight: 900; cursor: pointer; font-size: 11px; height: 30px; display: flex; align-items: center; font-family: 'Source Sans 3', sans-serif; text-transform: uppercase; }
-        .goog-te-combo { background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 60px !important; outline: none !important; margin: 0 !important; }
+        
+        /* ÖZEL RESET BUTONU İÇİN CSS */
+        .reset-en-btn { background: transparent !important; color: #c9a96e !important; border: 1px solid #c9a96e !important; padding: 0 12px !important; }
+        .reset-en-btn:hover { background: #c9a96e !important; color: #0d1424 !important; transition: 0.2s; }
 
         @media (max-width: 768px) {
           .header-title { font-size: 24px; }
           .header-subtitle { font-size: 12px; margin-top: 0px; }
           .sync-text { font-size: 10px; }
-          .action-btn, .goog-te-combo { padding: 0px 6px !important; font-size: 9px !important; height: 26px !important; }
+          .action-btn { padding: 0px 8px !important; font-size: 9px !important; height: 26px !important; }
+          .header-right-panel { gap: 6px !important; }
         }
       `}</style>
 
@@ -275,7 +286,7 @@ export default function GlobalHaberler() {
               <>
                 <h2 style={{ color: "#c9a96e", fontFamily: "'Playfair Display'" }}>CONTACT</h2>
                 <p style={{ lineHeight: "1.8", color: "#8a9ab0" }}>For your questions, collaborations, or advertising proposals:</p>
-                <h3 style={{ color: "#fff" }}>worldwindows.network@gmail.com</h3>
+                <h3 style={{ color: "#fff" }}>worldwindowsnetwork@gmail.com</h3>
               </>
             )}
           </div>
@@ -288,9 +299,16 @@ export default function GlobalHaberler() {
             <h1 className="header-title">WORLD WINDOWS</h1>
             <div className="header-subtitle">Global news to understand the world</div>
           </div>
-          <div className="header-right-panel" style={{ display: "flex", gap: "15px", alignItems: "center" }} translate="no">
+          
+          <div className="header-right-panel" style={{ display: "flex", gap: "10px", alignItems: "center" }} translate="no">
+             
+             {/* SİTEYİ SAF İNGİLİZCEYE SIFIRLAYAN YENİ BUTON */}
+             <button onClick={resetToEnglish} className="action-btn reset-en-btn">EN</button>
+             
+             {/* ARAPÇA BUG'I ÇÖZÜLEN ÇEVİRİ KUTUSU */}
              <div id="google_translate_element"></div>
-             <div className="sync-text">SYNC: {timeLeft}s</div>
+             
+             <div className="sync-text" style={{ marginLeft: "5px" }}>SYNC: {timeLeft}s</div>
              <button onClick={() => { fetchCollectiveNews(); setTimeLeft(60); }} className="action-btn">SYNC NOW</button>
           </div>
         </div>
