@@ -86,6 +86,9 @@ export default function GlobalHaberler() {
   const [activeTag, setActiveTag] = useState(GLOBAL_TAGS[0]);
   const [timeLeft, setTimeLeft] = useState(60);
   const [modalType, setModalType] = useState(null);
+  
+  // YENİ: ARAMA MOTORU STATE'İ
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     document.documentElement.lang = "en";
@@ -105,11 +108,10 @@ export default function GlobalHaberler() {
     script.async = true;
     document.body.appendChild(script);
 
-    // ARAPÇA BUG'INI ÖNLEYEN YENİ VE GÜVENLİ TASARIM HİLESİ
     const styleInterval = setInterval(() => {
       const combo = document.querySelector('.goog-te-combo');
       if (combo && !combo.dataset.hacked) {
-        combo.dataset.hacked = "true"; // Sadece 1 kere çalışmasını sağlar, Google'ı çökertmez
+        combo.dataset.hacked = "true";
         if (combo.options && combo.options.length > 0) {
           combo.options[0].textContent = '🌐 TRANSLATE';
         }
@@ -197,12 +199,22 @@ export default function GlobalHaberler() {
   }
 
   const displayData = useMemo(() => {
-    const filtered = activeTag.id === "all" ? newsPool : newsPool.filter(i => i.tagId === activeTag.id);
+    let filtered = activeTag.id === "all" ? newsPool : newsPool.filter(i => i.tagId === activeTag.id);
+    
+    // ARAMA MANTIĞI: Eğer searchTerm doluysa, başlıkta, detayda veya kaynakta ara
+    if (searchTerm.trim() !== "") {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(i => 
+        i.baslik.toLowerCase().includes(term) || 
+        i.detay.toLowerCase().includes(term) ||
+        i.kaynak.toLowerCase().includes(term)
+      );
+    }
+
     const sorted = [...filtered].sort((a, b) => b.timestamp - a.timestamp);
     return { radar: sorted.slice(0, 8), archive: sorted.slice(8, 500) };
-  }, [newsPool, activeTag]);
+  }, [newsPool, activeTag, searchTerm]); // searchTerm değiştiğinde listeyi anında güncelle
 
-  // ÇEREZLERİ SİLİP SİTEYİ İNGİLİZCEYE DÖNDÜREN FONKSİYON
   const resetToEnglish = () => {
     document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}`;
@@ -236,10 +248,25 @@ export default function GlobalHaberler() {
         .header-subtitle { font-family: 'Playfair Display', serif; font-size: 15px; color: #c9a96e; font-style: italic; margin-top: 2px; letter-spacing: 0.5px; opacity: 0.9; }
         .sync-text { font-size: 12px; color: #c9a96e; font-weight: bold; }
         .action-btn { background: #c9a96e; color: #0d1424; border: none; padding: 0 20px; border-radius: 4px; font-weight: 900; cursor: pointer; font-size: 11px; height: 30px; display: flex; align-items: center; font-family: 'Source Sans 3', sans-serif; text-transform: uppercase; }
-        
-        /* ÖZEL RESET BUTONU İÇİN CSS */
         .reset-en-btn { background: transparent !important; color: #c9a96e !important; border: 1px solid #c9a96e !important; padding: 0 12px !important; }
         .reset-en-btn:hover { background: #c9a96e !important; color: #0d1424 !important; transition: 0.2s; }
+
+        /* YENİ ARAMA KUTUSU (SEARCH INPUT) STİLLERİ */
+        .search-input {
+          background: #080c14;
+          border: 1px solid #c9a96e;
+          color: #e8e6e0;
+          padding: 6px 14px;
+          border-radius: 4px;
+          outline: none;
+          font-family: 'Source Sans 3', sans-serif;
+          font-size: 14px;
+          width: 250px;
+          transition: 0.3s;
+        }
+        .search-input:focus {
+          box-shadow: 0 0 8px rgba(201, 169, 110, 0.4);
+        }
 
         @media (max-width: 768px) {
           .header-title { font-size: 24px; }
@@ -247,6 +274,7 @@ export default function GlobalHaberler() {
           .sync-text { font-size: 10px; }
           .action-btn { padding: 0px 8px !important; font-size: 9px !important; height: 26px !important; }
           .header-right-panel { gap: 6px !important; }
+          .search-input { width: 140px; }
         }
       `}</style>
 
@@ -299,15 +327,9 @@ export default function GlobalHaberler() {
             <h1 className="header-title">WORLD WINDOWS</h1>
             <div className="header-subtitle">Global news to understand the world</div>
           </div>
-          
           <div className="header-right-panel" style={{ display: "flex", gap: "10px", alignItems: "center" }} translate="no">
-             
-             {/* SİTEYİ SAF İNGİLİZCEYE SIFIRLAYAN YENİ BUTON */}
              <button onClick={resetToEnglish} className="action-btn reset-en-btn">EN</button>
-             
-             {/* ARAPÇA BUG'I ÇÖZÜLEN ÇEVİRİ KUTUSU */}
              <div id="google_translate_element"></div>
-             
              <div className="sync-text" style={{ marginLeft: "5px" }}>SYNC: {timeLeft}s</div>
              <button onClick={() => { fetchCollectiveNews(); setTimeLeft(60); }} className="action-btn">SYNC NOW</button>
           </div>
@@ -322,9 +344,24 @@ export default function GlobalHaberler() {
 
       <main style={{ maxWidth: "1400px", margin: "0 auto" }}>
         <section style={{ padding: "30px 0" }}>
-          <h2 style={{ fontSize: "20px", color: "#c9a96e", fontFamily: "'Playfair Display'", padding: "0 32px", marginBottom: "10px", letterSpacing: "0.5px" }}>
-            {activeTag.id === "all" ? "ARE YOU READY TO DISCOVER THE WORLD..." : `LIVE RADAR: ${activeTag.label}`}
-          </h2>
+          
+          {/* SEARCH KUTUSU VE RADAR BAŞLIĞININ YENİ TASARIMI */}
+          <div style={{ display: "flex", alignItems: "center", gap: "20px", padding: "0 32px", marginBottom: "15px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span style={{ color: "#c9a96e", fontWeight: "900", fontSize: "12px", fontFamily: "'Source Sans 3', sans-serif", letterSpacing: "1px" }}>SEARCH:</span>
+              <input 
+                type="text" 
+                className="search-input" 
+                placeholder="Keyword, topic or source..." 
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <h2 style={{ fontSize: "20px", color: "#c9a96e", fontFamily: "'Playfair Display'", margin: 0, letterSpacing: "0.5px" }}>
+              {activeTag.id === "all" ? "ARE YOU READY TO DISCOVER THE WORLD..." : `LIVE RADAR: ${activeTag.label}`}
+            </h2>
+          </div>
+          
           <div className="news-slider">
             {displayData.radar.map(n => (
               <div key={n.id} className="news-card" onClick={() => { setSelectedNews(n); setModalType('news'); }}>
@@ -336,6 +373,10 @@ export default function GlobalHaberler() {
                 </div>
               </div>
             ))}
+            {/* Eğer arama sonucu hiç haber bulunamazsa küçük bir uyarı mesajı */}
+            {displayData.radar.length === 0 && (
+              <div style={{ color: "#8a9ab0", fontStyle: "italic", padding: "20px" }}>No recent news found for "{searchTerm}" in this category.</div>
+            )}
           </div>
         </section>
 
