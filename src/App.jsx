@@ -111,10 +111,7 @@ export default function GlobalHaberler() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(prev => { 
-        if (prev <= 1) { fetchCollectiveNews(); return 60; } 
-        return prev - 1; 
-      });
+      setTimeLeft(prev => { if (prev <= 1) { fetchCollectiveNews(); return 60; } return prev - 1; });
     }, 1000);
     return () => clearInterval(timer);
   }, [activeTag]);
@@ -132,7 +129,7 @@ export default function GlobalHaberler() {
           const xmlText = await res.text();
           const parser = new DOMParser();
           const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-          const items = Array.from(xmlDoc.querySelectorAll("item, entry")).slice(0, 10);
+          const items = Array.from(xmlDoc.querySelectorAll("item, entry")).slice(0, 15);
           const feedTitle = xmlDoc.querySelector("channel > title, feed > title")?.textContent || "Global";
           const feedOrigin = new URL(url).origin;
 
@@ -142,41 +139,40 @@ export default function GlobalHaberler() {
             let rawLink = (linkElem?.textContent || linkElem?.getAttribute("href") || "#").trim();
             if (rawLink.startsWith("/")) rawLink = feedOrigin + rawLink;
             if (rawLink.includes('bigpara.com')) rawLink = rawLink.replace('www.bigpara.com', 'bigpara.hurriyet.com.tr');
-            const desc = item.querySelector("description")?.textContent || item.querySelector("summary")?.textContent || "";
-            const cleanDesc = desc.replace(/<[^>]*>?/gm, '');
-            let imgUrl = `https://picsum.photos/seed/${encodeURIComponent(title.slice(0,5))}/800/450`;
-            const pubDate = item.querySelector("pubDate")?.textContent || item.querySelector("published")?.textContent;
-            return { id: Math.random(), baslik: title, detay: cleanDesc, kaynak: feedTitle.replace(/ - BBC News| \| World/gi, ''), url: rawLink, img: imgUrl, tagId: activeTag.id, timestamp: isNaN(new Date(pubDate).getTime()) ? Date.now() : new Date(pubDate).getTime() };
+            const pubDate = item.querySelector("pubDate")?.textContent || item.querySelector("published")?.textContent || item.querySelector("updated")?.textContent;
+            const timestamp = pubDate ? new Date(pubDate).getTime() : Date.now();
+            return { id: Math.random(), baslik: title, detay: (item.querySelector("description")?.textContent || "").replace(/<[^>]*>?/gm, ''), kaynak: feedTitle.replace(/ - BBC News| \| World/gi, ''), url: rawLink, img: `https://picsum.photos/seed/${encodeURIComponent(title.slice(0,5))}/800/450`, tagId: activeTag.id, timestamp: isNaN(timestamp) ? Date.now() : timestamp };
           });
         } catch (e) { return []; }
       });
       const results = await Promise.all(fetchPromises);
       results.forEach(batch => { if(batch) allFetchedNews.push(...batch); });
-      setNewsPool(allFetchedNews);
+      
+      // KONSOLİDE SIRALAMA: TÜM KAYNAKLARI ZAMANA GÖRE SIRALA
+      setNewsPool(allFetchedNews.sort((a, b) => b.timestamp - a.timestamp));
     } catch (e) {}
   }
 
   const displayData = useMemo(() => {
     let filtered = activeTag.id === "all" ? newsPool : newsPool.filter(i => i.tagId === activeTag.id);
     if (searchTerm.trim() !== "") {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(i => i.baslik.toLowerCase().includes(term));
-      return { radar: [], archive: [...filtered].sort((a,b) => b.timestamp - a.timestamp) };
+      filtered = filtered.filter(i => i.baslik.toLowerCase().includes(searchTerm.toLowerCase()));
+      return { radar: [], archive: filtered };
     }
-    const sorted = [...filtered].sort((a, b) => b.timestamp - a.timestamp);
-    return { radar: sorted.slice(0, 12), archive: sorted.slice(12, 500) };
+    return { radar: filtered.slice(0, 12), archive: filtered.slice(12, 500) };
   }, [newsPool, activeTag, searchTerm]);
 
   return (
     <div style={{ paddingTop: "40px", minHeight: "100vh", background: "#080c14", color: "#e8e6e0", fontFamily: "'Georgia', serif", overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Source+Sans+3:wght@400;700&display=swap');
-        .radar-container { overflow-x: auto; display: flex; gap: 20px; padding: 20px 32px 40px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+        .radar-container { overflow-x: auto; display: flex; gap: 20px; padding: 20px 32px 40px; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; }
         .radar-container::-webkit-scrollbar { height: 4px; }
         .radar-container::-webkit-scrollbar-thumb { background: #1e2d4a; border-radius: 10px; }
-        .news-card { min-width: 400px; max-width: 400px; background: #0d1424; border: 1px solid #1e2d4a; border-radius: 12px; cursor: pointer; overflow: hidden; flex-shrink: 0; scroll-snap-align: start; position: relative; }
+        .news-card { min-width: 400px; max-width: 400px; background: #0d1424; border: 1px solid #1e2d4a; border-radius: 12px; cursor: pointer; overflow: hidden; flex-shrink: 0; scroll-snap-align: start; position: relative; transition: 0.3s; }
+        .news-card:hover { border-color: #c9a96e; }
         .news-card img { width: 100%; height: 220px; object-fit: cover; border-bottom: 3px solid #c9a96e; }
-        .time-badge { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: #c9a96e; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #c9a96e; }
+        .time-badge { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: #c9a96e; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #c9a96e; z-index: 10; }
         .top-header-container { padding: 20px 32px 5px; display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; }
         .tag-bar { display: flex; gap: 8px; overflow-x: auto; padding: 12px 32px; background: #0d1424; border-bottom: 1px solid #1e2d4a; position: sticky; top: 0; z-index: 100; }
         .tag-pill { padding: 6px 16px; background: #080c14; border: 1px solid #1e2d4a; border-radius: 4px; color: #4a6080; font-size: 10px; font-weight: 900; cursor: pointer; white-space: nowrap; }
@@ -220,7 +216,7 @@ export default function GlobalHaberler() {
             <p style={{ color: "#8a9ab0", lineHeight: "1.8" }}>
               {modalType === 'about' && "World Windows is a professional news terminal that scans global finance, geopolitics, and economy news. Sources: Reuters, FT, WSJ, Bloomberg HT, BBC, NYT, CNBC and more."}
               {modalType === 'contact' && "Email: worldwindows.network@gmail.com"}
-              {modalType === 'privacy' && "We value your privacy. We use standard cookies for analytics and user experience."}
+              {modalType === 'privacy' && "We value your privacy. We use standard browser cookies for analytics and user experience."}
             </p>
           </div>
         </div>
@@ -269,7 +265,7 @@ export default function GlobalHaberler() {
           {displayData.archive.map(n => (
             <div key={n.id} className="archive-card" onClick={() => { setSelectedNews(n); setModalType('news'); }}>
               <div style={{ fontSize: "10px", color: "#c9a96e", fontWeight: "900" }}>{n.kaynak.toUpperCase()} • {getRelativeTime(n.timestamp)}</div>
-              <h4 style={{ fontSize: "15px", margin: "8px 0 0" }}>{n.baslik}</h4>
+              <h4 style={{ fontSize: "15px", margin: "8px 0 0", lineHeight: "1.4" }}>{n.baslik}</h4>
             </div>
           ))}
         </div>
