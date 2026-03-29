@@ -71,7 +71,6 @@ export default function GlobalHaberler() {
 
   useEffect(() => {
     document.title = "WORLD WINDOWS";
-    // FAVICON & GOOGLE TRANSLATE (ALTIN KUTU MODU)
     const head = document.getElementsByTagName('head')[0];
     let link = document.querySelector("link[rel*='icon']") || document.createElement('link');
     link.type = 'image/jpeg'; link.rel = 'shortcut icon'; link.href = '/logo.jpeg';
@@ -89,12 +88,23 @@ export default function GlobalHaberler() {
     script.async = true;
     document.body.appendChild(script);
 
-    // ALTIN KUTU (LANG) STIL ZORLAMASI
     const styleInterval = setInterval(() => {
       const combo = document.querySelector('.goog-te-combo');
       if (combo && !combo.dataset.hacked) {
         combo.dataset.hacked = "true";
-        if (combo.options && combo.options.length > 0) { combo.options[0].textContent = 'LANG'; }
+        
+        // İNGİLİZCE SEÇENEĞİNİ LİSTEYE EKLEME VE LANG ETİKETİ
+        if (combo.options) {
+          const hasEnglish = Array.from(combo.options).some(opt => opt.value === 'en');
+          if (!hasEnglish) {
+            const enOpt = document.createElement('option');
+            enOpt.value = 'en';
+            enOpt.textContent = 'English';
+            combo.insertBefore(enOpt, combo.firstChild);
+          }
+          combo.options[0].textContent = 'LANG';
+        }
+
         combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 75px !important; outline: none !important; margin: 0 !important;";
       }
       const gadget = document.querySelector('.goog-te-gadget');
@@ -165,10 +175,11 @@ export default function GlobalHaberler() {
     <div style={{ paddingTop: "40px", minHeight: "100vh", background: "#080c14", color: "#e8e6e0", fontFamily: "'Georgia', serif", overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Source+Sans+3:wght@400;700&display=swap');
-        .radar-container { overflow-x: auto; display: flex; gap: 20px; padding: 20px 32px 40px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+        .radar-container { overflow-x: auto; display: flex; gap: 20px; padding: 20px 32px 40px; -webkit-overflow-scrolling: touch; }
         .radar-container::-webkit-scrollbar { height: 4px; }
         .radar-container::-webkit-scrollbar-thumb { background: #1e2d4a; border-radius: 10px; }
-        .news-card { min-width: 400px; max-width: 400px; background: #0d1424; border: 1px solid #1e2d4a; border-radius: 12px; cursor: pointer; overflow: hidden; flex-shrink: 0; scroll-snap-align: start; }
+        .news-card { min-width: 400px; max-width: 400px; background: #0d1424; border: 1px solid #1e2d4a; border-radius: 12px; cursor: pointer; overflow: hidden; flex-shrink: 0; transition: 0.3s; }
+        .news-card:hover { border-color: #c9a96e; }
         .news-card img { width: 100%; height: 220px; object-fit: cover; border-bottom: 3px solid #c9a96e; }
         .top-header-container { padding: 20px 32px 5px; display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; }
         .tag-bar { display: flex; gap: 8px; overflow-x: auto; padding: 12px 32px; background: #0d1424; border-bottom: 1px solid #1e2d4a; position: sticky; top: 0; z-index: 100; }
@@ -262,7 +273,7 @@ export default function GlobalHaberler() {
           {displayData.archive.map(n => (
             <div key={n.id} className="archive-card" onClick={() => { setSelectedNews(n); setModalType('news'); }}>
               <div style={{ fontSize: "10px", color: "#c9a96e", fontWeight: "900" }}>{n.kaynak.toUpperCase()} • {getRelativeTime(n.timestamp)}</div>
-              <h4 style={{ fontSize: "15px", margin: "8px 0 0" }}>{n.baslik}</h4>
+              <h4 style={{ fontSize: "15px", margin: "8px 0 0", lineHeight: "1.4" }}>{n.baslik}</h4>
             </div>
           ))}
         </div>
@@ -275,7 +286,7 @@ export default function GlobalHaberler() {
           <span className="footer-link" onClick={() => setModalType('privacy')}>PRIVACY</span>
           <span className="footer-link" onClick={() => setModalType('contact')}>CONTACT</span>
         </div>
-        <div style={{ color: "#3a5278", fontSize: "10px", marginTop: "20px" }}>© 2026 World Windows Terminal. All Rights Reserved.</div>
+        <div style={{ color: "#3a5278", fontSize: "10px", marginTop: "30px" }}>© 2026 World Windows Terminal. All Rights Reserved.</div>
       </footer>
       <Analytics />
     </div>
