@@ -30,8 +30,14 @@ const SOURCE_LINKS = [
   { name: "The Guardian", url: "https://www.theguardian.com", color: "#0582CA" },
   { name: "Forbes", url: "https://www.forbes.com", color: "#E8E6E0" },
   { name: "Barron's", url: "https://www.barrons.com", color: "#E8E6E0" },
+  { name: "Politico", url: "https://www.politico.com", color: "#FF3344" },
+  { name: "Al Jazeera", url: "https://www.aljazeera.com", color: "#F9B000" },
   { name: "Bigpara", url: "https://bigpara.hurriyet.com.tr/", color: "#FF3333" },
   { name: "KAP", url: "https://www.kap.org.tr", color: "#00BFFF" },
+  { name: "Dünya", url: "https://www.dunya.com", color: "#FF3333" },
+  { name: "Para Analiz", url: "https://www.paraanaliz.com", color: "#E8E6E0" },
+  { name: "Kitco", url: "https://www.kitco.com", color: "#00D46A" },
+  { name: "Investing.com", url: "https://www.investing.com", color: "#F38B00" },
 ];
 
 const getRelativeTime = (ts) => {
@@ -135,21 +141,16 @@ export default function GlobalHaberler() {
             if (rawLink.includes('bigpara.com')) rawLink = rawLink.replace('www.bigpara.com', 'bigpara.hurriyet.com.tr');
             const pubDate = item.querySelector("pubDate")?.textContent || item.querySelector("published")?.textContent || item.querySelector("updated")?.textContent;
             const timestamp = pubDate ? new Date(pubDate).getTime() : Date.now();
-            
-            // AKILLI PUANLAMA SİSTEMİ
             let priorityScore = 0;
             const t = title.toLowerCase();
-            if (/breaking|emergency|war|coup|nuclear|savaş|darbe/.test(t)) priorityScore = 100; // KRİTİK
-            else if (/fed|trump|silver|critical minerals|putin|rates|gümüş|kritik mineral/.test(t)) priorityScore = 50; // ÖNEMLİ
-
+            if (/breaking|emergency|war|coup|nuclear|savaş|darbe/.test(t)) priorityScore = 100;
+            else if (/fed|trump|silver|critical minerals|putin|rates|gümüş|kritik mineral/.test(t)) priorityScore = 50;
             return { id: Math.random(), baslik: title, detay: (item.querySelector("description")?.textContent || "").replace(/<[^>]*>?/gm, ''), kaynak: feedTitle.replace(/ - BBC News| \| World/gi, ''), url: rawLink, img: `https://picsum.photos/seed/${encodeURIComponent(title.slice(0,5))}/800/450`, tagId: activeTag.id, timestamp: isNaN(timestamp) ? Date.now() : timestamp, score: priorityScore };
           });
         } catch (e) { return []; }
       });
       const results = await Promise.all(fetchPromises);
-      // SIRALAMA: ÖNCE PUAN (KRİTİK/ÖNEMLİ), SONRA ZAMAN
-      const sorted = results.flat().sort((a, b) => (b.score - a.score) || (b.timestamp - a.timestamp));
-      setNewsPool(sorted);
+      setNewsPool(results.flat().sort((a, b) => (b.score - a.score) || (b.timestamp - a.timestamp)));
     } catch (e) {}
   }
 
@@ -224,10 +225,20 @@ export default function GlobalHaberler() {
             <button className="close-btn" onClick={() => setModalType(null)}>✕</button>
             <h2 style={{ color: "#c9a96e", fontFamily: "'Playfair Display'" }}>{modalType.toUpperCase()}</h2>
             <p style={{ color: "#8a9ab0", lineHeight: "1.8" }}>
-              {modalType === 'about' && "World Windows is a professional news terminal that scans global finance, geopolitics, and economy news. Sources: Reuters, FT, WSJ, Bloomberg HT, BBC, NYT, CNBC and more."}
+              {modalType === 'about' && "World Windows is a professional news terminal that scans global finance, geopolitics, and economy news. Our goal is to present the complex news flow on a single screen in its purest and fastest form."}
               {modalType === 'contact' && "Email: worldwindows.network@gmail.com"}
-              {modalType === 'privacy' && "We value your privacy. We use standard cookies for analytics and user experience."}
+              {modalType === 'privacy' && "We value your privacy. We use standard browser cookies for analytics and user experience."}
             </p>
+            {modalType === 'about' && (
+              <div style={{ marginTop: "20px" }}>
+                <h3 style={{ color: "#c9a96e", fontSize: "16px", borderBottom: "1px solid #1e2d4a", paddingBottom: "10px" }}>INTEGRATED GLOBAL SOURCES</h3>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "15px" }}>
+                  {SOURCE_LINKS.map(s => (
+                    <a key={s.name} href={s.url} target="_blank" rel="noreferrer" style={{ color: s.color, textDecoration: "none", background: "#080c14", padding: "6px 12px", borderRadius: "6px", fontSize: "11px", border: "1px solid #1e2d4a", fontWeight: "bold" }}>{s.name}</a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
