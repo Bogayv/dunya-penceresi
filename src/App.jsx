@@ -135,12 +135,21 @@ export default function GlobalHaberler() {
             if (rawLink.includes('bigpara.com')) rawLink = rawLink.replace('www.bigpara.com', 'bigpara.hurriyet.com.tr');
             const pubDate = item.querySelector("pubDate")?.textContent || item.querySelector("published")?.textContent || item.querySelector("updated")?.textContent;
             const timestamp = pubDate ? new Date(pubDate).getTime() : Date.now();
-            return { id: Math.random(), baslik: title, detay: (item.querySelector("description")?.textContent || "").replace(/<[^>]*>?/gm, ''), kaynak: feedTitle.replace(/ - BBC News| \| World/gi, ''), url: rawLink, img: `https://picsum.photos/seed/${encodeURIComponent(title.slice(0,5))}/800/450`, tagId: activeTag.id, timestamp: isNaN(timestamp) ? Date.now() : timestamp };
+            
+            // AKILLI PUANLAMA SİSTEMİ
+            let priorityScore = 0;
+            const t = title.toLowerCase();
+            if (/breaking|emergency|war|coup|nuclear|savaş|darbe/.test(t)) priorityScore = 100; // KRİTİK
+            else if (/fed|trump|silver|critical minerals|putin|rates|gümüş|kritik mineral/.test(t)) priorityScore = 50; // ÖNEMLİ
+
+            return { id: Math.random(), baslik: title, detay: (item.querySelector("description")?.textContent || "").replace(/<[^>]*>?/gm, ''), kaynak: feedTitle.replace(/ - BBC News| \| World/gi, ''), url: rawLink, img: `https://picsum.photos/seed/${encodeURIComponent(title.slice(0,5))}/800/450`, tagId: activeTag.id, timestamp: isNaN(timestamp) ? Date.now() : timestamp, score: priorityScore };
           });
         } catch (e) { return []; }
       });
       const results = await Promise.all(fetchPromises);
-      setNewsPool(results.flat().sort((a, b) => b.timestamp - a.timestamp));
+      // SIRALAMA: ÖNCE PUAN (KRİTİK/ÖNEMLİ), SONRA ZAMAN
+      const sorted = results.flat().sort((a, b) => (b.score - a.score) || (b.timestamp - a.timestamp));
+      setNewsPool(sorted);
     } catch (e) {}
   }
 
@@ -164,12 +173,9 @@ export default function GlobalHaberler() {
     <div style={{ paddingTop: "40px", minHeight: "100vh", background: "#080c14", color: "#e8e6e0", fontFamily: "'Georgia', serif", overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Source+Sans+3:wght@400;700&display=swap');
-        
-        /* KRITIK: GOOGLE BALONCUK VE IFRAME IMHASI */
         iframe.goog-te-menu-frame, .goog-te-balloon-frame, .goog-tooltip, .goog-tooltip:hover { display: none !important; visibility: hidden !important; opacity: 0 !important; }
         body { top: 0px !important; position: static !important; }
         .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
-
         .radar-container { overflow-x: auto; display: flex; gap: 20px; padding: 20px 32px 40px; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; }
         .radar-container::-webkit-scrollbar { height: 4px; }
         .radar-container::-webkit-scrollbar-thumb { background: #1e2d4a; border-radius: 10px; }
