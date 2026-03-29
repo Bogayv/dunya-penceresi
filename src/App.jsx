@@ -93,33 +93,32 @@ export default function GlobalHaberler() {
   useEffect(() => {
     document.title = "WORLD WINDOWS";
     
-    // RADIKAL: BANNER SİYAHLAŞTIRMA VE SİLME
-    const darkLocker = () => {
+    const observer = new MutationObserver(() => {
+      // SADECE GOOGLE'IN BANDINI VE BALONCUKLARINI HEDEF AL, BIZIM KUTUYA DOKUNMA
       const targets = [
-        '.goog-te-balloon-frame', '.goog-te-balloon-wrapper', '.goog-te-menu-frame', 
-        '.goog-tooltip', '#goog-gt-tt', '.goog-te-spinner-pos', 
-        '.goog-te-banner-frame', 'iframe.goog-te-banner-frame', '.goog-te-banner', '.skiptranslate'
+        '.goog-te-balloon-frame', '.goog-te-balloon-wrapper', 
+        '.goog-te-menu-frame', '.goog-tooltip', '#goog-gt-tt', 
+        '.goog-te-spinner-pos', '.goog-te-banner-frame', 
+        'iframe.goog-te-banner-frame', '.goog-te-banner'
       ];
       
       targets.forEach(selector => {
-        document.querySelectorAll(selector).forEach(el => {
-          if (!el.id.includes('google_translate_element')) {
-            el.style.display = "none";
-            el.style.opacity = "0";
-            el.style.pointerEvents = "none";
-            el.style.background = "#080c14"; // Çıksa bile siyah çıksın
-          }
-        });
+        document.querySelectorAll(selector).forEach(el => el.remove());
       });
 
-      // Google'ın eklediği boşluğu terminal siyahına boya ve sıfırla
+      // Google'ın eklediği kaymaları sıfırla
       document.body.style.setProperty("top", "0px", "important");
-      document.body.style.setProperty("background-color", "#080c14", "important");
       document.documentElement.style.setProperty("margin-top", "0px", "important");
-      document.documentElement.style.setProperty("background-color", "#080c14", "important");
-    };
 
-    const observer = new MutationObserver(darkLocker);
+      // Google Translate metnini kısalt
+      const gadget = document.querySelector('.goog-te-gadget');
+      if (gadget) {
+        const textNode = Array.from(gadget.childNodes).find(n => n.nodeType === 3);
+        if (textNode && textNode.textContent.includes('tarafından')) {
+          textNode.textContent = ' Google Translate';
+        }
+      }
+    });
     observer.observe(document.body, { childList: true, subtree: true });
 
     const initTranslate = () => {
@@ -142,7 +141,6 @@ export default function GlobalHaberler() {
     initTranslate();
 
     const styleInterval = setInterval(() => {
-      darkLocker();
       const combo = document.querySelector('.goog-te-combo');
       if (combo) {
         if (combo.options && combo.options.length > 0) {
@@ -159,15 +157,10 @@ export default function GlobalHaberler() {
             combo.options[0].textContent = "LANG";
           }
         }
-        combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 75px !important; outline: none !important; margin: 0 !important; appearance: none !important;";
-      }
-      const gadget = document.querySelector('.goog-te-gadget');
-      if(gadget) { 
-        gadget.style.cssText = "color: #4a6080 !important; font-size: 10px !important; font-weight: bold !important; display: flex !important; align-items: center !important;";
-        const textNode = Array.from(gadget.childNodes).find(n => n.nodeType === 3);
-        if (textNode && textNode.textContent.includes('tarafından')) { textNode.textContent = ' Google Translate'; }
-      }
-    }, 100);
+        // BURASI KRITIK: ALTIN SARISI KUTUNUN GÖRÜNÜR OLMASINI GARANTI ET
+        combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 75px !important; outline: none !important; margin: 0 !important; display: block !important; opacity: 1 !important; visibility: visible !important;";
+      } else { initTranslate(); }
+    }, 200);
 
     return () => { clearInterval(styleInterval); observer.disconnect(); };
   }, []);
@@ -236,26 +229,19 @@ export default function GlobalHaberler() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Source+Sans+3:wght@400;700&display=swap');
         
-        /* KRİTİK: GOOGLE'IN BEYAZ ALANINI SİYAHLA BOYA VE GİZLE */
-        .goog-te-balloon-frame, .goog-te-balloon-wrapper, .goog-te-menu-frame, .goog-tooltip, #goog-gt-tt, .goog-te-banner-frame, iframe.goog-te-banner-frame, .goog-te-banner, .skiptranslate { 
+        /* BANNER VE BALONCUKLARI IMHA ET AMA BIZIM ELEMENTLERI KORU */
+        .goog-te-balloon-frame, .goog-te-balloon-wrapper, .goog-te-menu-frame, .goog-tooltip, #goog-gt-tt, .goog-te-banner-frame, iframe.goog-te-banner-frame, .goog-te-banner { 
            display: none !important; visibility: hidden !important; pointer-events: none !important; 
         }
         
-        /* Google'ın oluşturduğu Shadow DOM beyazlıklarını ve Body itmesini engelle */
-        html { 
+        html, body { 
           top: 0px !important; 
           margin-top: 0px !important; 
           background-color: #080c14 !important; 
         }
-        body { 
-          top: 0px !important; 
-          margin-top: 0px !important; 
-          position: static !important; 
-          background-color: #080c14 !important;
-        }
         
         h1, h2, h3, h4, p, span, font { pointer-events: none !important; user-select: none !important; }
-        .news-card, .archive-card, .tag-pill, button, a, .close-btn, .footer-link, .goog-te-combo { pointer-events: auto !important; }
+        .news-card, .archive-card, .tag-pill, button, a, .close-btn, .footer-link, #google_translate_element, .goog-te-combo { pointer-events: auto !important; }
 
         .radar-container { overflow-x: auto; display: flex; gap: 20px; padding: 20px 32px 40px; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; }
         .radar-container::-webkit-scrollbar { height: 4px; }
@@ -299,30 +285,6 @@ export default function GlobalHaberler() {
         </div>
       )}
 
-      {modalType && modalType !== 'news' && (
-        <div className="modal-overlay" onClick={() => setModalType(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <button className="close-btn" onClick={() => setModalType(null)}>✕</button>
-            <h2 style={{ color: "#c9a96e", fontFamily: "'Playfair Display'" }}>{modalType.toUpperCase()}</h2>
-            <p style={{ color: "#8a9ab0", lineHeight: "1.8" }}>
-              {modalType === 'about' && "World Windows is a professional news terminal."}
-              {modalType === 'contact' && "Email: worldwindows.network@gmail.com"}
-              {modalType === 'privacy' && "We value your privacy."}
-            </p>
-            {modalType === 'about' && (
-              <div style={{ marginTop: "20px" }}>
-                <h3 style={{ color: "#c9a96e", fontSize: "16px", borderBottom: "1px solid #1e2d4a", paddingBottom: "10px" }}>INTEGRATED GLOBAL SOURCES</h3>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "15px" }}>
-                  {SOURCE_LINKS.map(s => (
-                    <a key={s.name} href={s.url} target="_blank" rel="noreferrer" style={{ color: s.color, textDecoration: "none", background: "#080c14", padding: "6px 12px", borderRadius: "6px", fontSize: "11px", border: "1px solid #1e2d4a", fontWeight: "bold", pointerEvents: "auto" }}>{s.name}</a>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       <header style={{ background: "#0d1424" }}>
         <div className="top-header-container">
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -330,7 +292,7 @@ export default function GlobalHaberler() {
              <div><h1 className="header-title">WORLD WINDOWS</h1><div className="fiyakali-slogan">Global news to understand the world</div></div>
           </div>
           <div className="header-right-panel" translate="no" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-             <div id="google_translate_element"></div>
+             <div id="google_translate_element" style={{ position: "relative", zIndex: 10001 }}></div>
              <div style={{ fontSize: "11px", color: "#c9a96e", fontWeight: "bold" }}>SYNC: {timeLeft}s</div>
              <button onClick={() => { fetchCollectiveNews(); setTimeLeft(60); }} style={{ background: "#c9a96e", border: "none", padding: "0 12px", height: "30px", borderRadius: "4px", fontWeight: "900", cursor: "pointer", fontSize: "10px", pointerEvents: "auto" }}>SYNC NOW</button>
           </div>
