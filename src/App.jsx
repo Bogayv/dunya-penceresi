@@ -60,7 +60,7 @@ export default function GlobalHaberler() {
     window.googleTranslateElementInit = () => {
       new window.google.translate.TranslateElement({
         pageLanguage: 'en',
-        includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru', // Stratejik Diller
+        includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru',
         layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
         autoDisplay: false
       }, 'google_translate_element');
@@ -170,12 +170,32 @@ export default function GlobalHaberler() {
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(8,12,20,0.98); backdrop-filter: blur(15px); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { background: #0d1424; border: 1px solid #c9a96e; border-radius: 12px; max-width: 850px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; padding: 40px; }
         
-        /* GOOGLE TRANSLATE STYLING HACKS */
-        .goog-te-banner-frame.skiptranslate { display: none !important; } 
-        body { top: 0px !important; } 
-        #google_translate_element select { background: #080c14; color: #c9a96e; border: 1px solid #c9a96e; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; outline: none; font-family: 'Source Sans 3', sans-serif; text-transform: uppercase; }
+        /* === GOOGLE TRANSLATE STYLING HACKS === */
+        body { top: 0px !important; }
+        .goog-te-banner-frame.skiptranslate { display: none !important; }
+        
+        /* Logoyu ve "Powered by" yazısını tamamen gizle */
+        .goog-te-gadget { color: transparent !important; font-size: 0px !important; display: flex !important; align-items: center !important; }
+        .goog-te-gadget img { display: none !important; }
         .goog-logo-link { display: none !important; }
-        .goog-te-gadget { color: transparent !important; margin-bottom: -15px; }
+        
+        /* Açılır Kutuyu (Select) Terminal Butonlarına Benzet */
+        .goog-te-combo {
+          background-color: #080c14 !important;
+          color: #c9a96e !important;
+          border: 1px solid #1e2d4a !important;
+          padding: 6px 12px !important;
+          border-radius: 4px !important;
+          font-size: 10px !important;
+          font-weight: 900 !important;
+          font-family: 'Source Sans 3', sans-serif !important;
+          text-transform: uppercase !important;
+          cursor: pointer !important;
+          outline: none !important;
+          margin: 0 !important;
+        }
+        .goog-te-combo:hover { border-color: #c9a96e !important; }
+        #google_translate_element { margin-top: 2px; }
       `}</style>
 
       {/* MODAL SYSTEM */}
@@ -220,7 +240,7 @@ export default function GlobalHaberler() {
           <h1 style={{ fontFamily: "'Playfair Display'", fontSize: "32px", color: "#c9a96e", fontWeight: "900", margin: 0 }}>WORLD WINDOWS</h1>
           <div style={{ display: "flex", gap: "20px", alignItems: "center" }} translate="no">
              
-             {/* GOOGLE ÇEVİRİ WIDGET'I BURADA */}
+             {/* ŞIKLAŞTIRILMIŞ ÇEVİRİ WIDGET'I */}
              <div id="google_translate_element"></div>
 
              <div style={{ fontSize: "12px", color: "#c9a96e", fontWeight: "bold" }}>SYNC: {timeLeft}s</div>
