@@ -92,19 +92,15 @@ export default function GlobalHaberler() {
       const combo = document.querySelector('.goog-te-combo');
       if (combo && !combo.dataset.hacked) {
         combo.dataset.hacked = "true";
-        
-        // İNGİLİZCE SEÇENEĞİNİ LİSTEYE EKLEME VE LANG ETİKETİ
         if (combo.options) {
           const hasEnglish = Array.from(combo.options).some(opt => opt.value === 'en');
           if (!hasEnglish) {
             const enOpt = document.createElement('option');
-            enOpt.value = 'en';
-            enOpt.textContent = 'English';
+            enOpt.value = 'en'; enOpt.textContent = 'English';
             combo.insertBefore(enOpt, combo.firstChild);
           }
           combo.options[0].textContent = 'LANG';
         }
-
         combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 75px !important; outline: none !important; margin: 0 !important;";
       }
       const gadget = document.querySelector('.goog-te-gadget');
@@ -175,12 +171,12 @@ export default function GlobalHaberler() {
     <div style={{ paddingTop: "40px", minHeight: "100vh", background: "#080c14", color: "#e8e6e0", fontFamily: "'Georgia', serif", overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Source+Sans+3:wght@400;700&display=swap');
-        .radar-container { overflow-x: auto; display: flex; gap: 20px; padding: 20px 32px 40px; -webkit-overflow-scrolling: touch; }
+        .radar-container { overflow-x: auto; display: flex; gap: 20px; padding: 20px 32px 40px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
         .radar-container::-webkit-scrollbar { height: 4px; }
         .radar-container::-webkit-scrollbar-thumb { background: #1e2d4a; border-radius: 10px; }
-        .news-card { min-width: 400px; max-width: 400px; background: #0d1424; border: 1px solid #1e2d4a; border-radius: 12px; cursor: pointer; overflow: hidden; flex-shrink: 0; transition: 0.3s; }
-        .news-card:hover { border-color: #c9a96e; }
+        .news-card { min-width: 400px; max-width: 400px; background: #0d1424; border: 1px solid #1e2d4a; border-radius: 12px; cursor: pointer; overflow: hidden; flex-shrink: 0; scroll-snap-align: start; position: relative; }
         .news-card img { width: 100%; height: 220px; object-fit: cover; border-bottom: 3px solid #c9a96e; }
+        .time-badge { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: #c9a96e; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid #c9a96e; }
         .top-header-container { padding: 20px 32px 5px; display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; }
         .tag-bar { display: flex; gap: 8px; overflow-x: auto; padding: 12px 32px; background: #0d1424; border-bottom: 1px solid #1e2d4a; position: sticky; top: 0; z-index: 100; }
         .tag-pill { padding: 6px 16px; background: #080c14; border: 1px solid #1e2d4a; border-radius: 4px; color: #4a6080; font-size: 10px; font-weight: 900; cursor: pointer; white-space: nowrap; }
@@ -194,7 +190,6 @@ export default function GlobalHaberler() {
         .search-input { background: #080c14; border: 1px solid #c9a96e; color: #e8e6e0; padding: 6px 12px; border-radius: 4px; outline: none; width: 250px; }
         .fiyakali-slogan { font-family: 'Playfair Display', serif; font-style: italic; color: #c9a96e; opacity: 0.9; font-size: 15px; margin-top: 4px; letter-spacing: 0.5px; }
         .footer-link { color: #4a6080; text-decoration: none; margin: 0 10px; font-size: 12px; font-weight: bold; cursor: pointer; }
-
         @media (max-width: 768px) {
           .top-header-container { flex-direction: column; align-items: flex-start; padding: 15px 20px; }
           .header-right-panel { width: 100%; justify-content: space-between; margin-top: 15px; display: flex !important; align-items: center; }
@@ -223,7 +218,7 @@ export default function GlobalHaberler() {
             <button className="close-btn" onClick={() => setModalType(null)}>✕</button>
             <h2 style={{ color: "#c9a96e", fontFamily: "'Playfair Display'" }}>{modalType.toUpperCase()}</h2>
             <p style={{ color: "#8a9ab0", lineHeight: "1.8" }}>
-              {modalType === 'about' && "World Windows is a professional news terminal that scans global finance, geopolitics, and economy news. Integrated sources include: Reuters, FT, WSJ, Bloomberg HT, BBC, NYT, CNBC and more."}
+              {modalType === 'about' && "World Windows is a professional news terminal that scans global finance, geopolitics, and economy news. Sources: Reuters, FT, WSJ, Bloomberg HT, BBC, NYT, CNBC and more."}
               {modalType === 'contact' && "Email: worldwindows.network@gmail.com"}
               {modalType === 'privacy' && "We value your privacy. We use standard cookies for analytics and user experience."}
             </p>
@@ -259,6 +254,7 @@ export default function GlobalHaberler() {
           <div className="radar-container">
             {displayData.radar.map(n => (
               <div key={n.id} className="news-card" onClick={() => { setSelectedNews(n); setModalType('news'); }}>
+                <div className="time-badge">{getRelativeTime(n.timestamp)}</div>
                 <img src={n.img} />
                 <div style={{ padding: "15px" }}>
                   <div style={{ color: "#c9a96e", fontWeight: "900", fontSize: "10px" }}>{n.kaynak.toUpperCase()}</div>
@@ -273,7 +269,7 @@ export default function GlobalHaberler() {
           {displayData.archive.map(n => (
             <div key={n.id} className="archive-card" onClick={() => { setSelectedNews(n); setModalType('news'); }}>
               <div style={{ fontSize: "10px", color: "#c9a96e", fontWeight: "900" }}>{n.kaynak.toUpperCase()} • {getRelativeTime(n.timestamp)}</div>
-              <h4 style={{ fontSize: "15px", margin: "8px 0 0", lineHeight: "1.4" }}>{n.baslik}</h4>
+              <h4 style={{ fontSize: "15px", margin: "8px 0 0" }}>{n.baslik}</h4>
             </div>
           ))}
         </div>
