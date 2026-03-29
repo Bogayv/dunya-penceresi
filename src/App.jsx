@@ -162,7 +162,7 @@ export default function GlobalHaberler() {
     }
     const radar = []; const sourceCount = {};
     for (const item of filtered) {
-      if (radar.length >= 40) break;
+      if (radar.length >= 40) break; // 40 HABER SINIRI GERİ GELDİ
       if (!sourceCount[item.kaynak] || sourceCount[item.kaynak] < 3) {
         radar.push(item); sourceCount[item.kaynak] = (sourceCount[item.kaynak] || 0) + 1;
       }
