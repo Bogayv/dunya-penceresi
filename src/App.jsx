@@ -3,6 +3,8 @@ import { Analytics } from "@vercel/analytics/react";
 
 const GLOBAL_TAGS = [
   { id: "all", label: "ALL", urls: [] },
+  { id: "trump", label: "TRUMP", urls: ["https://www.reutersagency.com/feed/", "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml", "https://www.politico.com/rss/politicopicks.xml"]},
+  { id: "war", label: "WAR", urls: ["https://www.aljazeera.com/xml/rss/all.xml", "https://www.theguardian.com/world/rss", "http://feeds.bbci.co.uk/news/world/rss.xml"]},
   { id: "ekonomi", label: "ECONOMY", urls: ["https://www.ft.com/?format=rss", "https://www.economist.com/sections/economics/rss.xml", "https://www.wsj.com/xml/rss/3_7014.xml", "https://www.forbes.com/economics/feed/"]},
   { id: "finans", label: "FINANCE", urls: ["https://www.wsj.com/xml/rss/3_7031.xml", "https://www.cnbc.com/id/10000664/device/rss/rss.html", "https://feeds.barrons.com/v1/barrons/rss?xml=1", "https://www.ft.com/markets?format=rss"]},
   { id: "kripto", label: "CRYPTO", urls: ["https://cointelegraph.com/rss", "https://www.coindesk.com/arc/outboundfeeds/rss/"]},
@@ -77,7 +79,11 @@ export default function GlobalHaberler() {
     head.appendChild(link);
 
     window.googleTranslateElementInit = () => {
-      new window.google.translate.TranslateElement({ pageLanguage: 'en', includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru,hi,ja,ko,th,kk,az,el,pt,cs,da,nl', autoDisplay: false }, 'google_translate_element');
+      new window.google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru,hi,ja,ko,th,kk,az,el,pt,cs,da,nl',
+        autoDisplay: false
+      }, 'google_translate_element');
     };
     const script = document.createElement("script");
     script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit&hl=en";
@@ -153,20 +159,15 @@ export default function GlobalHaberler() {
       filtered = filtered.filter(i => i.baslik.toLowerCase().includes(searchTerm.toLowerCase()));
       return { radar: [], archive: filtered };
     }
-
-    // RADAR İÇİN SİTE BAŞINA MAX 3 HABER KURALI
-    const radar = [];
-    const sourceCount = {};
+    const radar = []; const sourceCount = {};
     for (const item of filtered) {
-      if (radar.length >= 40) break; // MAKSİMUM 40 HABER
+      if (radar.length >= 40) break;
       const source = item.kaynak;
       if (!sourceCount[source] || sourceCount[source] < 3) {
         radar.push(item);
         sourceCount[source] = (sourceCount[source] || 0) + 1;
       }
     }
-
-    // Arşiv, radarda olmayan haberlerden oluşur
     const archive = filtered.filter(f => !radar.find(r => r.id === f.id));
     return { radar, archive: archive.slice(0, 500) };
   }, [newsPool, activeTag, searchTerm]);
