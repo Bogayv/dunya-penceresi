@@ -84,32 +84,23 @@ export default function GlobalHaberler() {
 
   useEffect(() => {
     document.title = "WORLD WINDOWS";
-    
-    // GOOGLE TRANSLATE INIT - iOS DESTEKLİ
-    const initTranslate = () => {
-      if (!window.googleTranslateElementInit) {
-        window.googleTranslateElementInit = () => {
-          new window.google.translate.TranslateElement({ 
-            pageLanguage: 'en', 
-            includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru,hi,ja,ko,th,kk,az,el,pt,cs,da,nl', 
-            autoDisplay: false 
-          }, 'google_translate_element');
-        };
-      }
-      
-      const existingScript = document.getElementById('google-translate-script');
-      if (!existingScript) {
-        const script = document.createElement("script");
-        script.id = 'google-translate-script';
-        script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit&hl=en";
-        script.async = true;
-        document.body.appendChild(script);
-      }
+    const head = document.getElementsByTagName('head')[0];
+    let link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+    link.type = 'image/jpeg'; link.rel = 'shortcut icon'; link.href = '/logo.jpeg';
+    head.appendChild(link);
+
+    window.googleTranslateElementInit = () => {
+      new window.google.translate.TranslateElement({ 
+        pageLanguage: 'en', 
+        includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru,hi,ja,ko,th,kk,az,el,pt,cs,da,nl', 
+        autoDisplay: false 
+      }, 'google_translate_element');
     };
+    const script = document.createElement("script");
+    script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit&hl=en";
+    script.async = true;
+    document.body.appendChild(script);
 
-    initTranslate();
-
-    // iOS İÇİN SÜREKLİ DENETİM VE STİL KİLİDİ
     const styleInterval = setInterval(() => {
       const combo = document.querySelector('.goog-te-combo');
       if (combo) {
@@ -119,23 +110,21 @@ export default function GlobalHaberler() {
             const enOpt = document.createElement('option'); enOpt.value = 'en'; enOpt.textContent = 'English';
             combo.insertBefore(enOpt, combo.firstChild);
           }
-          if (combo.value === "" || combo.value === null) {
+          // SELECT LANGUAGE YAZISINI TAMAMEN SIL, VARSAYILAN OLARAK ENGLISH YAP
+          if (combo.value === "") {
              combo.value = "en";
              combo.dispatchEvent(new Event('change'));
           }
-          if (combo.options[0] && combo.options[0].value === "") {
+          // BOŞLUK VEYA İSİMSİZ YAPMA
+          if (combo.options[0].value === "") {
             combo.options[0].textContent = "---";
           }
         }
         combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 75px !important; outline: none !important; margin: 0 !important; appearance: none !important; -webkit-appearance: none !important;";
-      } else {
-        // Eğer iOS'ta kaybolursa tekrar yüklemeyi dene
-        initTranslate();
       }
       const gadget = document.querySelector('.goog-te-gadget');
       if(gadget) { gadget.style.cssText = "color: transparent !important; font-size: 0px !important; display: flex !important; align-items: center !important;"; }
-    }, 2000);
-
+    }, 100);
     return () => clearInterval(styleInterval);
   }, []);
 
@@ -162,20 +151,17 @@ export default function GlobalHaberler() {
           const items = Array.from(xmlDoc.querySelectorAll("item, entry")).slice(0, 15);
           const feedTitle = xmlDoc.querySelector("channel > title, feed > title")?.textContent || "Global";
           const feedOrigin = new URL(url).origin;
-
           return items.map(item => {
             const title = item.querySelector("title")?.textContent || "News";
             const linkElem = item.querySelector("link");
             let rawLink = (linkElem?.textContent || linkElem?.getAttribute("href") || "#").trim();
             if (rawLink.startsWith("/")) rawLink = feedOrigin + rawLink;
             if (rawLink.includes('bigpara.com')) rawLink = rawLink.replace('www.bigpara.com', 'bigpara.hurriyet.com.tr');
-            
             const newsId = btoa(unescape(encodeURIComponent(title.slice(0,50) + feedTitle)));
             if (!persistentTimeCache[newsId]) {
               persistentTimeCache[newsId] = Date.now();
               localStorage.setItem('ww_time_cache', JSON.stringify(persistentTimeCache));
             }
-
             return { id: Math.random(), baslik: title, detay: (item.querySelector("description")?.textContent || "").replace(/<[^>]*>?/gm, ''), kaynak: feedTitle.replace(/ - BBC News| \| World/gi, ''), url: rawLink, img: `https://picsum.photos/seed/${encodeURIComponent(title.slice(0,5))}/800/450`, tagId: activeTag.id, timestamp: persistentTimeCache[newsId] };
           });
         } catch (e) { return []; }
