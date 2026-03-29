@@ -274,7 +274,7 @@ export default function GlobalHaberler() {
         .search-input:focus { box-shadow: 0 0 8px rgba(201, 169, 110, 0.4); }
         .search-input-icon { position: absolute; right: 12px; display: flex; align-items: center; justify-content: center; color: #c9a96e; }
 
-        /* YENİ FOTOĞRAF LOGOSU İÇİN STİL */
+        /* UZANTI .jpeg OLARAK GÜNCELLENDİ */
         .brand-logo-img { width: 75px; height: 75px; object-fit: contain; margin-right: 20px; border-radius: 8px; }
 
         @media (max-width: 768px) {
@@ -299,7 +299,6 @@ export default function GlobalHaberler() {
           .search-input { padding: 4px 30px 4px 10px; font-size: 12px; }
           .search-input-icon svg { width: 14px; height: 14px; }
           
-          /* Mobilde fotoğraf logosu ekranı boğmasın diye küçültülüyor */
           .brand-logo-img { width: 55px; height: 55px; margin-right: 12px; }
         }
       `}</style>
@@ -351,8 +350,8 @@ export default function GlobalHaberler() {
         <div className="top-header-container" style={{ maxWidth: "1400px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div className="header-left-panel" style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
              
-             {/* KOD (SVG) YERİNE DOĞRUDAN SENİN KOYACAĞIN FOTOĞRAFI OKUYAN ETİKET */}
-             <img src="/logo.png" alt="World Windows Logo" className="brand-logo-img" />
+             {/* UZANTI logo.jpeg OLARAK GÜNCELLENDİ */}
+             <img src="/logo.jpeg" alt="World Windows Logo" className="brand-logo-img" />
              
              <div>
                <h1 className="header-title">WORLD WINDOWS</h1>
