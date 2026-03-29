@@ -67,8 +67,12 @@ const TradingViewLiveTicker = memo(() => {
   return <div style={{ background: "#000", borderBottom: "1px solid #1e2d4a", minHeight: "46px" }} ref={container}></div>;
 });
 
-// BELLEKTE ZAMAN SAKLAMA (Haberler Just Now kalmasın diye)
-const globalTimeCache = {};
+// ZAMANI HAFIZADA TUTAN MEKANİZMA
+let persistentTimeCache = {};
+try {
+  const saved = localStorage.getItem('ww_time_cache');
+  if (saved) persistentTimeCache = JSON.parse(saved);
+} catch (e) {}
 
 export default function GlobalHaberler() {
   const [newsPool, setNewsPool] = useState([]);
@@ -77,6 +81,7 @@ export default function GlobalHaberler() {
   const [timeLeft, setTimeLeft] = useState(60);
   const [modalType, setModalType] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [refreshBit, setRefreshBit] = useState(0); // Dakika başı arayüzü tazelemek için
 
   useEffect(() => {
     document.title = "WORLD WINDOWS";
@@ -113,9 +118,14 @@ export default function GlobalHaberler() {
     return () => clearInterval(styleInterval);
   }, []);
 
+  // SAYACI VE DAKİKA GÖSTERİMİNİ İŞLETEN TİMER
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(prev => { if (prev <= 1) { fetchCollectiveNews(); return 60; } return prev - 1; });
+      setTimeLeft(prev => { 
+        if (prev <= 1) { fetchCollectiveNews(); return 60; } 
+        return prev - 1; 
+      });
+      setRefreshBit(b => b + 1); // Arayüzdeki "X mins ago" yazılarını her saniye tetikler
     }, 1000);
     return () => clearInterval(timer);
   }, [activeTag]);
@@ -124,6 +134,7 @@ export default function GlobalHaberler() {
 
   async function fetchCollectiveNews() {
     try {
+      const allFetchedNews = [];
       const targetUrls = activeTag.id === "all" ? ALL_URLS : activeTag.urls;
       const fetchPromises = targetUrls.map(async (url) => {
         try {
@@ -143,23 +154,25 @@ export default function GlobalHaberler() {
             if (rawLink.startsWith("/")) rawLink = feedOrigin + rawLink;
             if (rawLink.includes('bigpara.com')) rawLink = rawLink.replace('www.bigpara.com', 'bigpara.hurriyet.com.tr');
             
-            // ZAMAN YAKALAMA VE SABİTLEME
-            const pubDateStr = item.querySelector("pubDate")?.textContent || item.querySelector("published")?.textContent || item.querySelector("updated")?.textContent;
-            const newsKey = btoa(unescape(encodeURIComponent(title.slice(0,40) + feedTitle))); // Benzersiz haber anahtarı
+            // BENZERSİZ HABER KİMLİĞİ
+            const newsId = btoa(unescape(encodeURIComponent(title.slice(0,50) + feedTitle)));
             
-            let finalTimestamp;
-            const parsedTime = pubDateStr ? new Date(pubDateStr).getTime() : null;
-
-            if (parsedTime && !isNaN(parsedTime)) {
-              finalTimestamp = parsedTime;
-            } else if (globalTimeCache[newsKey]) {
-              finalTimestamp = globalTimeCache[newsKey];
-            } else {
-              finalTimestamp = Date.now();
-              globalTimeCache[newsKey] = finalTimestamp; // Zamanı dondur
+            // EĞER HABERİ İLK KEZ GÖRÜYORSAK ŞU ANKİ ZAMANI MÜHÜRLE
+            if (!persistentTimeCache[newsId]) {
+              persistentTimeCache[newsId] = Date.now();
+              localStorage.setItem('ww_time_cache', JSON.stringify(persistentTimeCache));
             }
 
-            return { id: Math.random(), baslik: title, detay: (item.querySelector("description")?.textContent || "").replace(/<[^>]*>?/gm, ''), kaynak: feedTitle.replace(/ - BBC News| \| World/gi, ''), url: rawLink, img: `https://picsum.photos/seed/${encodeURIComponent(title.slice(0,5))}/800/450`, tagId: activeTag.id, timestamp: finalTimestamp };
+            return { 
+              id: Math.random(), 
+              baslik: title, 
+              detay: (item.querySelector("description")?.textContent || "").replace(/<[^>]*>?/gm, ''), 
+              kaynak: feedTitle.replace(/ - BBC News| \| World/gi, ''), 
+              url: rawLink, 
+              img: `https://picsum.photos/seed/${encodeURIComponent(title.slice(0,5))}/800/450`, 
+              tagId: activeTag.id, 
+              timestamp: persistentTimeCache[newsId] 
+            };
           });
         } catch (e) { return []; }
       });
@@ -182,7 +195,7 @@ export default function GlobalHaberler() {
       }
     }
     return { radar, archive: filtered.filter(f => !radar.find(r => r.id === f.id)).slice(0, 500) };
-  }, [newsPool, activeTag, searchTerm]);
+  }, [newsPool, activeTag, searchTerm, refreshBit]);
 
   return (
     <div style={{ paddingTop: "40px", minHeight: "100vh", background: "#080c14", color: "#e8e6e0", fontFamily: "'Georgia', serif", overflowX: "hidden" }}>
