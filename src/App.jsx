@@ -69,7 +69,6 @@ export default function GlobalHaberler() {
     script.async = true;
     document.body.appendChild(script);
 
-    // KISA "EN" YAZISI VE TASARIM SABİTLEYİCİ
     const styleInterval = setInterval(() => {
       const combo = document.querySelector('.goog-te-combo');
       if (combo) {
@@ -169,10 +168,9 @@ export default function GlobalHaberler() {
   }, [newsPool, activeTag]);
 
   return (
-    // PADDING 40PX'E ÇIKARILDI (4 SATIR)
     <div style={{ paddingTop: "40px", minHeight: "100vh", background: "#080c14", color: "#e8e6e0", fontFamily: "'Georgia', serif", overflowX: "hidden" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&family=Source+Sans+3:wght@400;700&display=swap');
         .tag-bar { display: flex; gap: 8px; overflow-x: auto; padding: 12px 32px; background: #0d1424; border-bottom: 1px solid #1e2d4a; position: sticky; top: 0; z-index: 100; }
         .tag-pill { padding: 6px 16px; background: #080c14; border: 1px solid #1e2d4a; border-radius: 4px; color: #4a6080; font-size: 10px; font-weight: 900; cursor: pointer; white-space: nowrap; transition: 0.2s; }
         .tag-pill.active { background: #c9a96e; border-color: #c9a96e; color: #0d1424; }
@@ -199,8 +197,11 @@ export default function GlobalHaberler() {
         .goog-tooltip:hover { display: none !important; }
         .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
 
-        /* === BUTON TASARIMLARI VE MOBİL DUYARLILIK === */
-        .header-title { font-family: 'Playfair Display'; font-size: 32px; color: #c9a96e; font-weight: 900; margin: 0; white-space: nowrap; }
+        /* === BUTON TASARIMLARI VE YENİ EKLENEN BAŞLIKLAR === */
+        .header-left-panel { display: flex; flex-direction: column; }
+        .header-title { font-family: 'Playfair Display', serif; font-size: 32px; color: #c9a96e; font-weight: 900; margin: 0; white-space: nowrap; }
+        .header-subtitle { font-family: 'Playfair Display', serif; font-size: 15px; color: #c9a96e; font-style: italic; margin-top: 2px; letter-spacing: 0.5px; opacity: 0.9; }
+        
         .sync-text { font-size: 12px; color: #c9a96e; font-weight: bold; }
         .action-btn { background: #c9a96e; color: #0d1424; border: none; padding: 0 20px; border-radius: 4px; font-weight: 900; cursor: pointer; font-size: 11px; height: 30px; display: flex; align-items: center; font-family: 'Source Sans 3', sans-serif; text-transform: uppercase; }
         
@@ -208,7 +209,8 @@ export default function GlobalHaberler() {
 
         /* TELEFON EKRANLARI İÇİN KÜÇÜLTME ADIMLARI */
         @media (max-width: 768px) {
-          .header-title { font-size: 22px; }
+          .header-title { font-size: 24px; }
+          .header-subtitle { font-size: 12px; margin-top: 0px; }
           .sync-text { font-size: 10px; }
           .action-btn, .goog-te-combo {
             padding: 0px 8px !important;
@@ -258,14 +260,18 @@ export default function GlobalHaberler() {
 
       <header style={{ background: "#0d1424" }}>
         <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "20px 32px 5px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h1 className="header-title">WORLD WINDOWS</h1>
-          <div className="header-right-panel" style={{ display: "flex", gap: "15px", alignItems: "center" }} translate="no">
-             
-             <div id="google_translate_element"></div>
+          
+          <div className="header-left-panel">
+            <h1 className="header-title">WORLD WINDOWS</h1>
+            <div className="header-subtitle">Global news to understand the world</div>
+          </div>
 
+          <div className="header-right-panel" style={{ display: "flex", gap: "15px", alignItems: "center" }} translate="no">
+             <div id="google_translate_element"></div>
              <div className="sync-text">SYNC: {timeLeft}s</div>
              <button onClick={() => { fetchCollectiveNews(); setTimeLeft(60); }} className="action-btn">SYNC NOW</button>
           </div>
+
         </div>
         <div className="tag-bar">
           {GLOBAL_TAGS.map(t => (
@@ -277,7 +283,11 @@ export default function GlobalHaberler() {
 
       <main style={{ maxWidth: "1400px", margin: "0 auto" }}>
         <section style={{ padding: "30px 0" }}>
-          <h2 style={{ fontSize: "20px", color: "#c9a96e", fontFamily: "'Playfair Display'", padding: "0 32px", marginBottom: "10px" }}>LIVE RADAR: {activeTag.label}</h2>
+          {/* TÜMÜ SEÇİLİYKEN ÇIKAN YENİ İNGİLİZCE BAŞLIK */}
+          <h2 style={{ fontSize: "20px", color: "#c9a96e", fontFamily: "'Playfair Display'", padding: "0 32px", marginBottom: "10px", letterSpacing: "0.5px" }}>
+            {activeTag.id === "all" ? "ARE YOU READY TO DISCOVER THE WORLD..." : `LIVE RADAR: ${activeTag.label}`}
+          </h2>
+          
           <div className="news-slider">
             {displayData.radar.map(n => (
               <div key={n.id} className="news-card" onClick={() => { setSelectedNews(n); setModalType('news'); }}>
