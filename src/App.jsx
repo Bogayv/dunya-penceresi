@@ -55,21 +55,42 @@ export default function GlobalHaberler() {
   const [timeLeft, setTimeLeft] = useState(60);
   const [modalType, setModalType] = useState(null);
 
-  // GOOGLE ÇEVİRİ MOTORU BAŞLATICI (Müdahale Edildi)
+  // GOOGLE TRANSLATE ZORUNLU MÜDAHALE (JAVASCRIPT HACK)
   useEffect(() => {
     window.googleTranslateElementInit = () => {
       new window.google.translate.TranslateElement({
         pageLanguage: 'en',
         includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru',
-        layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
         autoDisplay: false
       }, 'google_translate_element');
     };
+    
     const script = document.createElement("script");
-    // URL sonuna eklenen hl=en parametresi widget'ı zorla İngilizce yapar
     script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit&hl=en";
     script.async = true;
     document.body.appendChild(script);
+
+    // Google'ın stillerini ve metnini sürekli ezmek için güçlü kontrolcü
+    const styleInterval = setInterval(() => {
+      const combo = document.querySelector('.goog-te-combo');
+      if (combo) {
+        // Metni LANGUAGE olarak değiştir
+        if (combo.options && combo.options.length > 0) {
+          if (combo.options[0].text !== 'LANGUAGE') {
+            combo.options[0].text = 'LANGUAGE';
+          }
+        }
+        // Altın sarısı ve terminal stili zorlaması
+        combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 15px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; outline: none !important;";
+      }
+      
+      const gadget = document.querySelector('.goog-te-gadget');
+      if(gadget) {
+        gadget.style.cssText = "color: transparent !important; font-size: 0px !important; display: flex !important; align-items: center !important;";
+      }
+    }, 500);
+
+    return () => clearInterval(styleInterval);
   }, []);
 
   useEffect(() => {
@@ -174,29 +195,8 @@ export default function GlobalHaberler() {
         /* === GOOGLE TRANSLATE STYLING HACKS === */
         body { top: 0px !important; }
         .goog-te-banner-frame.skiptranslate { display: none !important; }
-        
-        /* Logoyu ve gereksiz elementleri tamamen gizle */
-        .goog-te-gadget { color: transparent !important; font-size: 0px !important; display: flex !important; align-items: center !important; }
-        .goog-te-gadget img { display: none !important; }
         .goog-logo-link { display: none !important; }
-        
-        /* Açılır Kutuyu Altın Sarısı Butona Çevir */
-        .goog-te-combo {
-          background-color: #c9a96e !important;
-          color: #0d1424 !important;
-          border: none !important;
-          padding: 8px 16px !important;
-          border-radius: 4px !important;
-          font-size: 11px !important;
-          font-weight: 900 !important;
-          font-family: 'Source Sans 3', sans-serif !important;
-          text-transform: uppercase !important;
-          cursor: pointer !important;
-          outline: none !important;
-          margin: 0 !important;
-          height: 30px !important;
-        }
-        #google_translate_element { margin-top: 0px; }
+        #google_translate_element { display: flex; align-items: center; height: 30px; margin-right: 10px; }
       `}</style>
 
       {/* MODAL SYSTEM */}
@@ -239,13 +239,13 @@ export default function GlobalHaberler() {
       <header style={{ background: "#0d1424" }}>
         <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "20px 32px 5px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h1 style={{ fontFamily: "'Playfair Display'", fontSize: "32px", color: "#c9a96e", fontWeight: "900", margin: 0 }}>WORLD WINDOWS</h1>
-          <div style={{ display: "flex", gap: "20px", alignItems: "center" }} translate="no">
+          <div style={{ display: "flex", gap: "15px", alignItems: "center" }} translate="no">
              
-             {/* ALTIN SARISI DİL SEÇİCİ WIDGET */}
+             {/* ZORLA ALTIN SARISI VE "LANGUAGE" YAZAN WIDGET */}
              <div id="google_translate_element"></div>
 
              <div style={{ fontSize: "12px", color: "#c9a96e", fontWeight: "bold" }}>SYNC: {timeLeft}s</div>
-             <button onClick={() => { fetchCollectiveNews(); setTimeLeft(60); }} style={{ background: "#c9a96e", color: "#0d1424", border: "none", padding: "8px 20px", borderRadius: "4px", fontWeight: "900", cursor: "pointer", fontSize: "11px", height: "30px", display: "flex", alignItems: "center" }}>SYNC NOW</button>
+             <button onClick={() => { fetchCollectiveNews(); setTimeLeft(60); }} style={{ background: "#c9a96e", color: "#0d1424", border: "none", padding: "0 20px", borderRadius: "4px", fontWeight: "900", cursor: "pointer", fontSize: "11px", height: "30px", display: "flex", alignItems: "center" }}>SYNC NOW</button>
           </div>
         </div>
         <div className="tag-bar">
