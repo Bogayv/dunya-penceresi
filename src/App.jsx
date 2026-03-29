@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, memo, useMemo } from "react";
+import { Analytics } from "@vercel/analytics/react";
 
 // GLOBAL MEDYA DEVLERİ VE KAYNAKLAR
 const GLOBAL_TAGS = [
@@ -246,6 +247,7 @@ export default function GlobalHaberler() {
         </div>
         <div style={{ color: "#3a5278", fontSize: "10px", marginTop: "30px" }}>© 2026 World Windows Terminal. All Rights Reserved.</div>
       </footer>
+      <Analytics />
     </div>
   );
 }
