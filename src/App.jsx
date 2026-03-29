@@ -86,8 +86,6 @@ export default function GlobalHaberler() {
   const [activeTag, setActiveTag] = useState(GLOBAL_TAGS[0]);
   const [timeLeft, setTimeLeft] = useState(60);
   const [modalType, setModalType] = useState(null);
-  
-  // YENİ: ARAMA MOTORU STATE'İ
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -99,7 +97,8 @@ export default function GlobalHaberler() {
     window.googleTranslateElementInit = () => {
       new window.google.translate.TranslateElement({
         pageLanguage: 'en',
-        includedLanguages: 'tr,es,de,fr,ar,zh-CN,ru,hi,ja,ko,th,kk,az,el,pt,cs,da,nl',
+        // İNGİLİZCE (en) LİSTEYE GERİ EKLENDİ
+        includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru,hi,ja,ko,th,kk,az,el,pt,cs,da,nl',
         autoDisplay: false
       }, 'google_translate_element');
     };
@@ -113,9 +112,9 @@ export default function GlobalHaberler() {
       if (combo && !combo.dataset.hacked) {
         combo.dataset.hacked = "true";
         if (combo.options && combo.options.length > 0) {
-          combo.options[0].textContent = '🌐 TRANSLATE';
+          combo.options[0].textContent = 'LANG'; // BUTON YAZISI LANG OLARAK DEĞİŞTİRİLDİ
         }
-        combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 110px !important; outline: none !important; margin: 0 !important;";
+        combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 70px !important; outline: none !important; margin: 0 !important;";
       }
       const gadget = document.querySelector('.goog-te-gadget');
       if(gadget) {
@@ -200,8 +199,6 @@ export default function GlobalHaberler() {
 
   const displayData = useMemo(() => {
     let filtered = activeTag.id === "all" ? newsPool : newsPool.filter(i => i.tagId === activeTag.id);
-    
-    // ARAMA MANTIĞI: Eğer searchTerm doluysa, başlıkta, detayda veya kaynakta ara
     if (searchTerm.trim() !== "") {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(i => 
@@ -210,16 +207,9 @@ export default function GlobalHaberler() {
         i.kaynak.toLowerCase().includes(term)
       );
     }
-
     const sorted = [...filtered].sort((a, b) => b.timestamp - a.timestamp);
     return { radar: sorted.slice(0, 8), archive: sorted.slice(8, 500) };
-  }, [newsPool, activeTag, searchTerm]); // searchTerm değiştiğinde listeyi anında güncelle
-
-  const resetToEnglish = () => {
-    document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}`;
-    window.location.reload();
-  };
+  }, [newsPool, activeTag, searchTerm]);
 
   return (
     <div style={{ paddingTop: "40px", minHeight: "100vh", background: "#080c14", color: "#e8e6e0", fontFamily: "'Georgia', serif", overflowX: "hidden" }}>
@@ -248,31 +238,17 @@ export default function GlobalHaberler() {
         .header-subtitle { font-family: 'Playfair Display', serif; font-size: 15px; color: #c9a96e; font-style: italic; margin-top: 2px; letter-spacing: 0.5px; opacity: 0.9; }
         .sync-text { font-size: 12px; color: #c9a96e; font-weight: bold; }
         .action-btn { background: #c9a96e; color: #0d1424; border: none; padding: 0 20px; border-radius: 4px; font-weight: 900; cursor: pointer; font-size: 11px; height: 30px; display: flex; align-items: center; font-family: 'Source Sans 3', sans-serif; text-transform: uppercase; }
-        .reset-en-btn { background: transparent !important; color: #c9a96e !important; border: 1px solid #c9a96e !important; padding: 0 12px !important; }
-        .reset-en-btn:hover { background: #c9a96e !important; color: #0d1424 !important; transition: 0.2s; }
+        
+        .search-input { background: #080c14; border: 1px solid #c9a96e; color: #e8e6e0; padding: 6px 14px; border-radius: 4px; outline: none; font-family: 'Source Sans 3', sans-serif; font-size: 14px; width: 250px; transition: 0.3s; }
+        .search-input:focus { box-shadow: 0 0 8px rgba(201, 169, 110, 0.4); }
 
-        /* YENİ ARAMA KUTUSU (SEARCH INPUT) STİLLERİ */
-        .search-input {
-          background: #080c14;
-          border: 1px solid #c9a96e;
-          color: #e8e6e0;
-          padding: 6px 14px;
-          border-radius: 4px;
-          outline: none;
-          font-family: 'Source Sans 3', sans-serif;
-          font-size: 14px;
-          width: 250px;
-          transition: 0.3s;
-        }
-        .search-input:focus {
-          box-shadow: 0 0 8px rgba(201, 169, 110, 0.4);
-        }
+        .goog-te-combo { background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 70px !important; outline: none !important; margin: 0 !important; }
 
         @media (max-width: 768px) {
           .header-title { font-size: 24px; }
           .header-subtitle { font-size: 12px; margin-top: 0px; }
           .sync-text { font-size: 10px; }
-          .action-btn { padding: 0px 8px !important; font-size: 9px !important; height: 26px !important; }
+          .action-btn, .goog-te-combo { padding: 0px 6px !important; font-size: 9px !important; height: 26px !important; }
           .header-right-panel { gap: 6px !important; }
           .search-input { width: 140px; }
         }
@@ -328,7 +304,6 @@ export default function GlobalHaberler() {
             <div className="header-subtitle">Global news to understand the world</div>
           </div>
           <div className="header-right-panel" style={{ display: "flex", gap: "10px", alignItems: "center" }} translate="no">
-             <button onClick={resetToEnglish} className="action-btn reset-en-btn">EN</button>
              <div id="google_translate_element"></div>
              <div className="sync-text" style={{ marginLeft: "5px" }}>SYNC: {timeLeft}s</div>
              <button onClick={() => { fetchCollectiveNews(); setTimeLeft(60); }} className="action-btn">SYNC NOW</button>
@@ -345,7 +320,6 @@ export default function GlobalHaberler() {
       <main style={{ maxWidth: "1400px", margin: "0 auto" }}>
         <section style={{ padding: "30px 0" }}>
           
-          {/* SEARCH KUTUSU VE RADAR BAŞLIĞININ YENİ TASARIMI */}
           <div style={{ display: "flex", alignItems: "center", gap: "20px", padding: "0 32px", marginBottom: "15px", flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <span style={{ color: "#c9a96e", fontWeight: "900", fontSize: "12px", fontFamily: "'Source Sans 3', sans-serif", letterSpacing: "1px" }}>SEARCH:</span>
@@ -373,7 +347,6 @@ export default function GlobalHaberler() {
                 </div>
               </div>
             ))}
-            {/* Eğer arama sonucu hiç haber bulunamazsa küçük bir uyarı mesajı */}
             {displayData.radar.length === 0 && (
               <div style={{ color: "#8a9ab0", fontStyle: "italic", padding: "20px" }}>No recent news found for "{searchTerm}" in this category.</div>
             )}
