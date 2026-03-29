@@ -59,7 +59,8 @@ export default function GlobalHaberler() {
     window.googleTranslateElementInit = () => {
       new window.google.translate.TranslateElement({
         pageLanguage: 'en',
-        includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru',
+        // İNGİLİZCE (EN) ÇIKARILDI, YENİ GLOBAL DİLLER EKLENDİ
+        includedLanguages: 'tr,es,de,fr,ar,zh-CN,ru,hi,ja,ko,th,kk,az,el,pt,cs,da,nl',
         autoDisplay: false
       }, 'google_translate_element');
     };
@@ -69,6 +70,7 @@ export default function GlobalHaberler() {
     script.async = true;
     document.body.appendChild(script);
 
+    // KISA "EN" YAZISI VE DARALTILMIŞ BUTON TASARIMI
     const styleInterval = setInterval(() => {
       const combo = document.querySelector('.goog-te-combo');
       if (combo) {
@@ -77,7 +79,8 @@ export default function GlobalHaberler() {
             combo.options[0].text = 'EN';
           }
         }
-        combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 15px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; outline: none !important;";
+        // padding azaltıldı ve width daraltıldı
+        combo.style.cssText = "background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 60px !important; outline: none !important;";
       }
       
       const gadget = document.querySelector('.goog-te-gadget');
@@ -205,7 +208,8 @@ export default function GlobalHaberler() {
         .sync-text { font-size: 12px; color: #c9a96e; font-weight: bold; }
         .action-btn { background: #c9a96e; color: #0d1424; border: none; padding: 0 20px; border-radius: 4px; font-weight: 900; cursor: pointer; font-size: 11px; height: 30px; display: flex; align-items: center; font-family: 'Source Sans 3', sans-serif; text-transform: uppercase; }
         
-        .goog-te-combo { background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 15px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; outline: none !important; margin: 0 !important; }
+        /* DAHA KISA EN BUTONU */
+        .goog-te-combo { background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 60px !important; outline: none !important; margin: 0 !important; }
 
         /* TELEFON EKRANLARI İÇİN KÜÇÜLTME ADIMLARI */
         @media (max-width: 768px) {
@@ -213,7 +217,7 @@ export default function GlobalHaberler() {
           .header-subtitle { font-size: 12px; margin-top: 0px; }
           .sync-text { font-size: 10px; }
           .action-btn, .goog-te-combo {
-            padding: 0px 8px !important;
+            padding: 0px 6px !important;
             font-size: 9px !important;
             height: 26px !important;
           }
@@ -283,7 +287,6 @@ export default function GlobalHaberler() {
 
       <main style={{ maxWidth: "1400px", margin: "0 auto" }}>
         <section style={{ padding: "30px 0" }}>
-          {/* TÜMÜ SEÇİLİYKEN ÇIKAN YENİ İNGİLİZCE BAŞLIK */}
           <h2 style={{ fontSize: "20px", color: "#c9a96e", fontFamily: "'Playfair Display'", padding: "0 32px", marginBottom: "10px", letterSpacing: "0.5px" }}>
             {activeTag.id === "all" ? "ARE YOU READY TO DISCOVER THE WORLD..." : `LIVE RADAR: ${activeTag.label}`}
           </h2>
