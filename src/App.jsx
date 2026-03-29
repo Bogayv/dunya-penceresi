@@ -77,11 +77,7 @@ export default function GlobalHaberler() {
     head.appendChild(link);
 
     window.googleTranslateElementInit = () => {
-      new window.google.translate.TranslateElement({
-        pageLanguage: 'en',
-        includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru,hi,ja,ko,th,kk,az,el,pt,cs,da,nl',
-        autoDisplay: false
-      }, 'google_translate_element');
+      new window.google.translate.TranslateElement({ pageLanguage: 'en', includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru,hi,ja,ko,th,kk,az,el,pt,cs,da,nl', autoDisplay: false }, 'google_translate_element');
     };
     const script = document.createElement("script");
     script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit&hl=en";
@@ -120,7 +116,6 @@ export default function GlobalHaberler() {
 
   async function fetchCollectiveNews() {
     try {
-      const allFetchedNews = [];
       const targetUrls = activeTag.id === "all" ? ALL_URLS : activeTag.urls;
       const fetchPromises = targetUrls.map(async (url) => {
         try {
@@ -129,7 +124,7 @@ export default function GlobalHaberler() {
           const xmlText = await res.text();
           const parser = new DOMParser();
           const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-          const items = Array.from(xmlDoc.querySelectorAll("item, entry")).slice(0, 15);
+          const items = Array.from(xmlDoc.querySelectorAll("item, entry")).slice(0, 10); // Her kaynaktan eşit miktar
           const feedTitle = xmlDoc.querySelector("channel > title, feed > title")?.textContent || "Global";
           const feedOrigin = new URL(url).origin;
 
@@ -146,10 +141,8 @@ export default function GlobalHaberler() {
         } catch (e) { return []; }
       });
       const results = await Promise.all(fetchPromises);
-      results.forEach(batch => { if(batch) allFetchedNews.push(...batch); });
-      
-      // KONSOLİDE SIRALAMA: TÜM KAYNAKLARI ZAMANA GÖRE SIRALA
-      setNewsPool(allFetchedNews.sort((a, b) => b.timestamp - a.timestamp));
+      const allFetchedNews = results.flat().sort((a, b) => b.timestamp - a.timestamp);
+      setNewsPool(allFetchedNews);
     } catch (e) {}
   }
 
@@ -216,7 +209,7 @@ export default function GlobalHaberler() {
             <p style={{ color: "#8a9ab0", lineHeight: "1.8" }}>
               {modalType === 'about' && "World Windows is a professional news terminal that scans global finance, geopolitics, and economy news. Sources: Reuters, FT, WSJ, Bloomberg HT, BBC, NYT, CNBC and more."}
               {modalType === 'contact' && "Email: worldwindows.network@gmail.com"}
-              {modalType === 'privacy' && "We value your privacy. We use standard browser cookies for analytics and user experience."}
+              {modalType === 'privacy' && "We value your privacy. We use standard cookies for analytics and user experience."}
             </p>
           </div>
         </div>
