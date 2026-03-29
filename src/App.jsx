@@ -201,7 +201,7 @@ export default function GlobalHaberler() {
   const displayData = useMemo(() => {
     const filtered = activeTag.id === "all" ? newsPool : newsPool.filter(i => i.tagId === activeTag.id);
     const sorted = [...filtered].sort((a, b) => b.timestamp - a.timestamp);
-    return { radar: sorted.slice(0, 8), archive: sorted.slice(8, 500) };
+    return { radar: sorted.slice(0, 8), archive: sorted.slice(8, 500) }; // 500 HABERLİK LİMİT BURADA
   }, [newsPool, activeTag]);
 
   return (
@@ -246,16 +246,11 @@ export default function GlobalHaberler() {
         
         .goog-te-combo { background-color: #c9a96e !important; color: #0d1424 !important; border: none !important; padding: 0px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 900 !important; font-family: 'Source Sans 3', sans-serif !important; text-transform: uppercase !important; cursor: pointer !important; height: 30px !important; width: 60px !important; outline: none !important; margin: 0 !important; }
 
-        /* TELEFON EKRANLARI İÇİN KÜÇÜLTME ADIMLARI */
         @media (max-width: 768px) {
           .header-title { font-size: 24px; }
           .header-subtitle { font-size: 12px; margin-top: 0px; }
           .sync-text { font-size: 10px; }
-          .action-btn, .goog-te-combo {
-            padding: 0px 6px !important;
-            font-size: 9px !important;
-            height: 26px !important;
-          }
+          .action-btn, .goog-te-combo { padding: 0px 6px !important; font-size: 9px !important; height: 26px !important; }
           .header-right-panel { gap: 8px !important; }
         }
       `}</style>
@@ -279,30 +274,11 @@ export default function GlobalHaberler() {
                 <h2 style={{ color: "#c9a96e", fontFamily: "'Playfair Display'" }}>ABOUT US</h2>
                 <p style={{ lineHeight: "1.8", color: "#8a9ab0" }}>World Windows is a professional news terminal that scans global finance, geopolitics, and economy news in seconds. Our goal is to present the complex news flow on a single screen in its purest and fastest form.</p>
                 
-                {/* --- KURUMSAL RENKLERLE KAYNAKLAR BÖLÜMÜ --- */}
                 <h3 style={{ color: "#c9a96e", fontFamily: "'Playfair Display'", marginTop: "35px", borderBottom: "1px solid #1e2d4a", paddingBottom: "10px", fontSize: "18px" }}>INTEGRATED GLOBAL SOURCES</h3>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "20px" }}>
                   {SOURCE_LINKS.map(s => (
-                    <a 
-                      key={s.name} 
-                      href={s.url} 
-                      target="_blank" 
-                      rel="noreferrer" 
-                      style={{ 
-                        color: s.color, 
-                        fontFamily: s.font, 
-                        fontWeight: s.weight || "normal", 
-                        fontStyle: s.style || "normal", 
-                        letterSpacing: s.letterSpacing || "normal",
-                        textDecoration: "none", 
-                        background: "#080c14", 
-                        border: "1px solid #1e2d4a", 
-                        padding: "8px 14px", 
-                        borderRadius: "6px",
-                        fontSize: "12px",
-                        transition: "0.2s",
-                        display: "inline-block"
-                      }}
+                    <a key={s.name} href={s.url} target="_blank" rel="noreferrer" 
+                      style={{ color: s.color, fontFamily: s.font, fontWeight: s.weight || "normal", fontStyle: s.style || "normal", letterSpacing: s.letterSpacing || "normal", textDecoration: "none", background: "#080c14", border: "1px solid #1e2d4a", padding: "8px 14px", borderRadius: "6px", fontSize: "12px", transition: "0.2s", display: "inline-block" }}
                       onMouseOver={(e) => { e.target.style.borderColor = s.color; e.target.style.transform = "translateY(-2px)"; }}
                       onMouseOut={(e) => { e.target.style.borderColor = "#1e2d4a"; e.target.style.transform = "translateY(0)"; }}
                     >
@@ -377,7 +353,12 @@ export default function GlobalHaberler() {
           <div className="archive-grid">
             {displayData.archive.map(n => (
               <div key={n.id} className="archive-card" onClick={() => { setSelectedNews(n); setModalType('news'); }}>
-                <div style={{ fontSize: "10px", color: "#c9a96e", marginBottom: "8px", fontWeight: "900" }} translate="no">#{n.tagLabel} • {getRelativeTime(n.timestamp)}</div>
+                
+                {/* --- KAYNAK BİLGİSİ ARŞİVE EKLENDİ --- */}
+                <div style={{ fontSize: "10px", color: "#c9a96e", marginBottom: "8px", fontWeight: "900" }} translate="no">
+                  {n.kaynak.toUpperCase()} • #{n.tagLabel} • {getRelativeTime(n.timestamp)}
+                </div>
+                
                 <h4 style={{ fontSize: "16px", color: "#e8e6e0", lineHeight: "1.4", margin: 0 }}>{n.baslik}</h4>
               </div>
             ))}
