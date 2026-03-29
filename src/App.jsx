@@ -102,9 +102,13 @@ export default function GlobalHaberler() {
     document.body.appendChild(script);
   }, []);
 
+  // GERİ SAYIM MEKANİZMASI (SYNC TIMER)
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(prev => { if (prev <= 1) { fetchCollectiveNews(); return 60; } return prev - 1; });
+      setTimeLeft(prev => { 
+        if (prev <= 1) { fetchCollectiveNews(); return 60; } 
+        return prev - 1; 
+      });
     }, 1000);
     return () => clearInterval(timer);
   }, [activeTag]);
@@ -168,7 +172,6 @@ export default function GlobalHaberler() {
         .radar-container::-webkit-scrollbar { height: 4px; }
         .radar-container::-webkit-scrollbar-thumb { background: #1e2d4a; border-radius: 10px; }
         .news-card { min-width: 400px; max-width: 400px; background: #0d1424; border: 1px solid #1e2d4a; border-radius: 12px; cursor: pointer; overflow: hidden; flex-shrink: 0; scroll-snap-align: start; transition: 0.3s; }
-        .news-card:hover { border-color: #c9a96e; }
         .news-card img { width: 100%; height: 220px; object-fit: cover; border-bottom: 3px solid #c9a96e; }
         .top-header-container { padding: 20px 32px 5px; display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; }
         .tag-bar { display: flex; gap: 8px; overflow-x: auto; padding: 12px 32px; background: #0d1424; border-bottom: 1px solid #1e2d4a; position: sticky; top: 0; z-index: 100; }
@@ -215,7 +218,7 @@ export default function GlobalHaberler() {
             <h2 style={{ color: "#c9a96e", fontFamily: "'Playfair Display'" }}>ABOUT US</h2>
             <p style={{ lineHeight: "1.8", color: "#8a9ab0" }}>World Windows is a professional news terminal that scans global finance, geopolitics, and economy news in seconds. Our goal is to present the complex news flow on a single screen in its purest and fastest form.</p>
             <h3 style={{ color: "#c9a96e", marginTop: "30px", fontSize: "16px", borderBottom: "1px solid #1e2d4a", paddingBottom: "10px" }}>INTEGRATED GLOBAL SOURCES</h3>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "15px" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "15px" }}>
               {SOURCE_LINKS.map(s => (
                 <a key={s.name} href={s.url} target="_blank" rel="noreferrer" style={{ color: s.color, textDecoration: "none", background: "#080c14", padding: "6px 12px", borderRadius: "6px", fontSize: "11px", border: "1px solid #1e2d4a", fontWeight: "bold" }}>{s.name}</a>
               ))}
@@ -251,9 +254,10 @@ export default function GlobalHaberler() {
              <img src="/logo.jpeg" style={{ width: "50px", height: "50px", marginRight: "12px", objectFit: "contain" }} />
              <div><h1 className="header-title">WORLD WINDOWS</h1><div className="fiyakali-slogan">Global news to understand the world</div></div>
           </div>
-          <div className="header-right-panel" translate="no">
+          <div className="header-right-panel" translate="no" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
              <div id="google_translate_element"></div>
-             <button onClick={() => fetchCollectiveNews()} style={{ background: "#c9a96e", border: "none", padding: "0 12px", height: "30px", borderRadius: "4px", fontWeight: "900", cursor: "pointer", fontSize: "10px" }}>SYNC NOW</button>
+             <div style={{ fontSize: "11px", color: "#c9a96e", fontWeight: "bold" }}>SYNC: {timeLeft}s</div>
+             <button onClick={() => { fetchCollectiveNews(); setTimeLeft(60); }} style={{ background: "#c9a96e", border: "none", padding: "0 12px", height: "30px", borderRadius: "4px", fontWeight: "900", cursor: "pointer", fontSize: "10px" }}>SYNC NOW</button>
           </div>
         </div>
         <div className="tag-bar">{GLOBAL_TAGS.map(t => (<div key={t.id} className={`tag-pill ${activeTag.id === t.id ? 'active' : ''}`} onClick={() => setActiveTag(t)}>#{t.label}</div>))}</div>
