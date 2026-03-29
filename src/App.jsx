@@ -55,7 +55,7 @@ export default function GlobalHaberler() {
   const [timeLeft, setTimeLeft] = useState(60);
   const [modalType, setModalType] = useState(null);
 
-  // GOOGLE ÇEVİRİ MOTORU BAŞLATICI
+  // GOOGLE ÇEVİRİ MOTORU BAŞLATICI (Müdahale Edildi)
   useEffect(() => {
     window.googleTranslateElementInit = () => {
       new window.google.translate.TranslateElement({
@@ -66,7 +66,8 @@ export default function GlobalHaberler() {
       }, 'google_translate_element');
     };
     const script = document.createElement("script");
-    script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+    // URL sonuna eklenen hl=en parametresi widget'ı zorla İngilizce yapar
+    script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit&hl=en";
     script.async = true;
     document.body.appendChild(script);
   }, []);
@@ -174,28 +175,28 @@ export default function GlobalHaberler() {
         body { top: 0px !important; }
         .goog-te-banner-frame.skiptranslate { display: none !important; }
         
-        /* Logoyu ve "Powered by" yazısını tamamen gizle */
+        /* Logoyu ve gereksiz elementleri tamamen gizle */
         .goog-te-gadget { color: transparent !important; font-size: 0px !important; display: flex !important; align-items: center !important; }
         .goog-te-gadget img { display: none !important; }
         .goog-logo-link { display: none !important; }
         
-        /* Açılır Kutuyu (Select) Terminal Butonlarına Benzet */
+        /* Açılır Kutuyu Altın Sarısı Butona Çevir */
         .goog-te-combo {
-          background-color: #080c14 !important;
-          color: #c9a96e !important;
-          border: 1px solid #1e2d4a !important;
-          padding: 6px 12px !important;
+          background-color: #c9a96e !important;
+          color: #0d1424 !important;
+          border: none !important;
+          padding: 8px 16px !important;
           border-radius: 4px !important;
-          font-size: 10px !important;
+          font-size: 11px !important;
           font-weight: 900 !important;
           font-family: 'Source Sans 3', sans-serif !important;
           text-transform: uppercase !important;
           cursor: pointer !important;
           outline: none !important;
           margin: 0 !important;
+          height: 30px !important;
         }
-        .goog-te-combo:hover { border-color: #c9a96e !important; }
-        #google_translate_element { margin-top: 2px; }
+        #google_translate_element { margin-top: 0px; }
       `}</style>
 
       {/* MODAL SYSTEM */}
@@ -240,11 +241,11 @@ export default function GlobalHaberler() {
           <h1 style={{ fontFamily: "'Playfair Display'", fontSize: "32px", color: "#c9a96e", fontWeight: "900", margin: 0 }}>WORLD WINDOWS</h1>
           <div style={{ display: "flex", gap: "20px", alignItems: "center" }} translate="no">
              
-             {/* ŞIKLAŞTIRILMIŞ ÇEVİRİ WIDGET'I */}
+             {/* ALTIN SARISI DİL SEÇİCİ WIDGET */}
              <div id="google_translate_element"></div>
 
              <div style={{ fontSize: "12px", color: "#c9a96e", fontWeight: "bold" }}>SYNC: {timeLeft}s</div>
-             <button onClick={() => { fetchCollectiveNews(); setTimeLeft(60); }} style={{ background: "#c9a96e", color: "#0d1424", border: "none", padding: "8px 20px", borderRadius: "4px", fontWeight: "900", cursor: "pointer", fontSize: "11px" }}>SYNC NOW</button>
+             <button onClick={() => { fetchCollectiveNews(); setTimeLeft(60); }} style={{ background: "#c9a96e", color: "#0d1424", border: "none", padding: "8px 20px", borderRadius: "4px", fontWeight: "900", cursor: "pointer", fontSize: "11px", height: "30px", display: "flex", alignItems: "center" }}>SYNC NOW</button>
           </div>
         </div>
         <div className="tag-bar">
