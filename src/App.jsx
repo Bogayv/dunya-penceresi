@@ -97,7 +97,7 @@ export default function GlobalHaberler() {
     window.googleTranslateElementInit = () => {
       new window.google.translate.TranslateElement({
         pageLanguage: 'en',
-        includedLanguages: 'tr,es,de,fr,ar,zh-CN,ru,hi,ja,ko,th,kk,az,el,pt,cs,da,nl',
+        includedLanguages: 'en,tr,es,de,fr,ar,zh-CN,ru,hi,ja,ko,th,kk,az,el,pt,cs,da,nl',
         autoDisplay: false
       }, 'google_translate_element');
     };
@@ -229,13 +229,6 @@ export default function GlobalHaberler() {
     return { radar: sorted.slice(0, 8), archive: sorted.slice(8, 500) };
   }, [newsPool, activeTag, searchTerm]);
 
-  // ÇEREZLERİ TEMİZLEYİP İNGİLİZCEYE DÖNDÜREN FONKSİYON
-  const resetToEnglish = () => {
-    document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}`;
-    window.location.reload();
-  };
-
   return (
     <div style={{ paddingTop: "40px", minHeight: "100vh", background: "#080c14", color: "#e8e6e0", fontFamily: "'Georgia', serif", overflowX: "hidden" }}>
       <style>{`
@@ -264,10 +257,6 @@ export default function GlobalHaberler() {
         .sync-text { font-size: 12px; color: #c9a96e; font-weight: bold; }
         .action-btn { background: #c9a96e; color: #0d1424; border: none; padding: 0 20px; border-radius: 4px; font-weight: 900; cursor: pointer; font-size: 11px; height: 30px; display: flex; align-items: center; font-family: 'Source Sans 3', sans-serif; text-transform: uppercase; }
         
-        /* EN BUTONU STİLLERİ GERİ GELDİ */
-        .reset-en-btn { background: transparent !important; color: #c9a96e !important; border: 1px solid #c9a96e !important; padding: 0 12px !important; }
-        .reset-en-btn:hover { background: #c9a96e !important; color: #0d1424 !important; transition: 0.2s; }
-
         .search-input { background: #080c14; border: 1px solid #c9a96e; color: #e8e6e0; padding: 6px 14px; border-radius: 4px; outline: none; font-family: 'Source Sans 3', sans-serif; font-size: 14px; width: 250px; transition: 0.3s; }
         .search-input:focus { box-shadow: 0 0 8px rgba(201, 169, 110, 0.4); }
 
@@ -333,8 +322,7 @@ export default function GlobalHaberler() {
             <div className="header-subtitle">Global news to understand the world</div>
           </div>
           <div className="header-right-panel" style={{ display: "flex", gap: "10px", alignItems: "center" }} translate="no">
-             {/* EN BUTONU BURAYA GERİ EKLENDİ */}
-             <button onClick={resetToEnglish} className="action-btn reset-en-btn">EN</button>
+             {/* SADECE GOOGLE TRANSLATE DROPDOWN'I KALDI, "EN" BUTONU SİLİNDİ */}
              <div id="google_translate_element"></div>
              <div className="sync-text" style={{ marginLeft: "5px" }}>SYNC: {timeLeft}s</div>
              <button onClick={() => { fetchCollectiveNews(); setTimeLeft(60); }} className="action-btn">SYNC NOW</button>
