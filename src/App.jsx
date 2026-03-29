@@ -59,6 +59,15 @@ export default function GlobalHaberler() {
 
   useEffect(() => {
     document.documentElement.lang = "en";
+    document.title = "WORLD WINDOWS";
+
+    // FAVICON ZORLAMASI (Eski ikonu silip logoyu mühürler)
+    const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+    link.type = 'image/jpeg';
+    link.rel = 'shortcut icon';
+    link.href = '/logo.jpeg';
+    document.getElementsByTagName('head')[0].appendChild(link);
+
     window.googleTranslateElementInit = () => {
       new window.google.translate.TranslateElement({
         pageLanguage: 'en',
@@ -149,17 +158,7 @@ export default function GlobalHaberler() {
         .close-btn { position: absolute; top: 15px; right: 15px; background: #c9a96e; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-weight: 900; }
         .header-title { font-family: 'Playfair Display', serif; font-size: 32px; color: #c9a96e; font-weight: 900; margin: 0; }
         .search-input { background: #080c14; border: 1px solid #c9a96e; color: #e8e6e0; padding: 6px 12px; border-radius: 4px; outline: none; width: 250px; }
-        
-        /* FIYAKALI (ITALIC & SERIF) SLOGAN STILI */
-        .fiyakali-slogan { 
-          font-family: 'Playfair Display', serif; 
-          font-style: italic; 
-          color: #c9a96e; 
-          opacity: 0.9; 
-          font-size: 15px; 
-          margin-top: 4px; 
-          letter-spacing: 0.5px;
-        }
+        .fiyakali-slogan { font-family: 'Playfair Display', serif; font-style: italic; color: #c9a96e; opacity: 0.9; font-size: 15px; margin-top: 4px; letter-spacing: 0.5px; }
 
         @media (max-width: 768px) {
           .top-header-container { flex-direction: column; align-items: flex-start; padding: 15px 20px; }
@@ -169,7 +168,6 @@ export default function GlobalHaberler() {
           .archive-grid { grid-template-columns: 1fr; padding: 20px; }
           .modal-content { padding: 20px; width: 95%; }
           .search-input { width: 100%; }
-          .fiyakali-slogan { font-size: 12px; margin-top: 2px; }
         }
       `}</style>
 
@@ -192,7 +190,6 @@ export default function GlobalHaberler() {
              <img src="/logo.jpeg" style={{ width: "50px", height: "50px", marginRight: "12px", objectFit: "contain" }} />
              <div>
                <h1 className="header-title">WORLD WINDOWS</h1>
-               {/* Buradaki sınıfı güncelledim */}
                <div className="fiyakali-slogan">Global news to understand the world</div>
              </div>
           </div>
