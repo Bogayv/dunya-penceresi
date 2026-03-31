@@ -1,6 +1,6 @@
 {
-  "short_name": "WorldWin",
-  "name": "WORLD WINDOWS Terminal",
+  "short_name": "Terminal",
+  "name": "World Windows Terminal",
   "icons": [
     {
       "src": "/logo.jpeg",
@@ -13,7 +13,7 @@
       "type": "image/jpeg"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "theme_color": "#0d1424",
   "background_color": "#080c14"
